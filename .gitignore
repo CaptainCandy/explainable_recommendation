@@ -1,0 +1,16 @@
+
+model/.DS_Store
+*.bin
+data/GoogleNews-vectors-negative300.txt
+data/music/item_review
+data/music/item_rid
+data/music/music.para
+data/music/music.test
+data/music/music.train
+data/music/music_test.csv
+data/music/music_train.csv
+data/music/music_valid.csv
+data/music/user_review
+data/music/user_rid
+data/.DS_Store
+data/music/.DS_Store
