@@ -8,13 +8,14 @@ import csv
 import dill as pickle
 import os
 
-tf.flags.DEFINE_string("valid_data", "../data/music/music_valid.csv", " Data for validation")
-tf.flags.DEFINE_string("test_data", "../data/music/music_test.csv", "Data for testing")
-tf.flags.DEFINE_string("train_data", "../data/music/music_train.csv", "Data for training")
-tf.flags.DEFINE_string("user_review", "../data/music/user_review", "User's reviews")
-tf.flags.DEFINE_string("item_review", "../data/music/item_review", "Item's reviews")
-tf.flags.DEFINE_string("user_review_id", "../data/music/user_rid", "user_review_id")
-tf.flags.DEFINE_string("item_review_id", "../data/music/item_rid", "item_review_id")
+dataset_name = "instruments"
+tf.flags.DEFINE_string("valid_data", "../data/%s/%s_valid.csv" % (dataset_name, dataset_name), " Data for validation")
+tf.flags.DEFINE_string("test_data", "../data/%s/%s_test.csv" % (dataset_name, dataset_name), "Data for testing")
+tf.flags.DEFINE_string("train_data", "../data/%s/%s_train.csv" % (dataset_name, dataset_name), "Data for training")
+tf.flags.DEFINE_string("user_review", "../data/%s/user_review" % dataset_name, "User's reviews")
+tf.flags.DEFINE_string("item_review", "../data/%s/item_review" % dataset_name, "Item's reviews")
+tf.flags.DEFINE_string("user_review_id", "../data/%s/user_rid" % dataset_name, "user_review_id")
+tf.flags.DEFINE_string("item_review_id", "../data/%s/item_rid" % dataset_name, "item_review_id")
 tf.flags.DEFINE_string("stopwords", "../data/stopwords", "stopwords")
 
 
@@ -291,7 +292,7 @@ def load_data_and_labels(train_data, valid_data, user_review, item_review, user_
 
 
 if __name__ == '__main__':
-    TPS_DIR = '../data/music'
+    TPS_DIR = '../data/%s' % dataset_name
     FLAGS = tf.flags.FLAGS
     FLAGS.flag_values_dict()
 
@@ -323,9 +324,9 @@ if __name__ == '__main__':
         zip(userid_train, itemid_train, reid_user_train, reid_item_train, y_train))
     batches_test = list(zip(userid_valid, itemid_valid, reid_user_valid, reid_item_valid, y_valid))
     print('write begin')
-    output = open(os.path.join(TPS_DIR, 'music.train'), 'wb')
+    output = open(os.path.join(TPS_DIR, ('%s.train' % dataset_name)), 'wb')
     pickle.dump(batches_train, output)
-    output = open(os.path.join(TPS_DIR, 'music.test'), 'wb')
+    output = open(os.path.join(TPS_DIR, ('%s.test' % dataset_name)), 'wb')
     pickle.dump(batches_test, output)
 
     para = {}
@@ -341,7 +342,7 @@ if __name__ == '__main__':
     para['test_length'] = len(y_valid)
     para['u_text'] = u_text
     para['i_text'] = i_text
-    output = open(os.path.join(TPS_DIR, 'music.para'), 'wb')
+    output = open(os.path.join(TPS_DIR, ('%s.para' % dataset_name)), 'wb')
 
     # Pickle dictionary using protocol 0.
     pickle.dump(para, output)
