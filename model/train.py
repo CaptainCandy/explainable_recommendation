@@ -13,7 +13,7 @@ import os
 import numpy as np
 import tensorflow as tf
 import pickle
-import datetime
+import time
 # import sys
 # sys.path.append('C:\\Users\\ZJUSO\\Documents\\CaptainCandy\\NARRE\\model')
 import NARRE
@@ -43,7 +43,7 @@ tf.flags.DEFINE_integer("num_epochs", 30, "Number of training epochs ")
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
 tf.flags.DEFINE_boolean("log_device_placement", False, "Log placement of ops on devices")
 
-time_str = datetime.datetime.now().isoformat("_")
+time_str = timeStr = time.strftime("%Y-%m-%d_%Hh%Mm%Ss", time.localtime(time.time()))
 
 
 def train_step(u_batch, i_batch, uid, iid, reuid, reiid, y_batch, batch_num):
