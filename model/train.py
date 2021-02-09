@@ -14,6 +14,7 @@ import numpy as np
 import tensorflow as tf
 import pickle
 import time
+import matplotlib.pyplot as plt
 # import sys
 # sys.path.append('C:\\Users\\ZJUSO\\Documents\\CaptainCandy\\NARRE\\model')
 import NARRE
@@ -21,7 +22,7 @@ from tensorflow.python import debug as tf_debug
 from tqdm import tqdm
 
 
-dataset_name = "instruments"
+dataset_name = "music"
 tf.flags.DEFINE_string("word2vec", "../data/GoogleNews-vectors-negative300.txt",
                        "Word2vec file with pre-trained embeddings (default: None)")
 tf.flags.DEFINE_string("valid_data", "../data/%s/%s.test" % (dataset_name, dataset_name), " Data for validation")
@@ -43,7 +44,7 @@ tf.flags.DEFINE_integer("num_epochs", 30, "Number of training epochs ")
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
 tf.flags.DEFINE_boolean("log_device_placement", False, "Log placement of ops on devices")
 
-time_str = timeStr = time.strftime("%Y-%m-%d_%Hh%Mm%Ss", time.localtime(time.time()))
+time_str = time.strftime("%Y-%m-%d_%Hh%Mm%Ss", time.localtime(time.time()))
 
 
 def train_step(u_batch, i_batch, uid, iid, reuid, reiid, y_batch, batch_num):
@@ -135,6 +136,23 @@ def load_word2vec_embedding(vocab_size, embedding_size, type):
                 f.readline()
     np.save("./%s_initW_%s.npy" % (type, dataset_name), initW)
     return initW
+
+
+def plot_train_process(rmse_train, rmse_test, mae_train, mae_test):
+    # 绘制曲线
+    plt.figure(figsize=(15, 6))
+    plt.subplot(121)
+    plt.plot(rmse_train)
+    plt.plot(rmse_test)
+    plt.legend(('Train RMSE', 'Val RMSE'))
+    plt.title("RMSE")
+    plt.subplot(122)
+    plt.plot(mae_train)
+    plt.plot(mae_test)
+    plt.title("MAE")
+    plt.legend(('Train MAE', 'Val MAE'))
+    plt.savefig('./results/%s_%s.jpg' % (dataset_name, time_str))
+    plt.close()
 
 
 if __name__ == '__main__':
@@ -377,6 +395,8 @@ if __name__ == '__main__':
                 print("")
             print('best rmse:', best_rmse)
             print('best mae:', best_mae)
-            np.savez("./criterion_%s.npz" % time_str, rmse_train=rmse_train_listforplot, rmse_test=rmse_test_listforplot,
+            np.savez("./criterion_%s_%s.npz" % (dataset_name, time_str), rmse_train=rmse_train_listforplot, rmse_test=rmse_test_listforplot,
                      mae_train=mae_train_listforplot, mae_test=mae_test_listforplot)
+            plot_train_process(rmse_train_listforplot, rmse_test_listforplot,
+                               mae_train_listforplot, mae_test_listforplot)
             # deep.save('./checkpoints/NARRE_%s_%s' % (dataset_name, time_str))
