@@ -15,8 +15,10 @@ import pandas as pd
 import numpy as np
 import dill as pickle
 
-TPS_DIR = '../data/instruments'
-TP_file = os.path.join(TPS_DIR, 'Musical_Instruments_5.json')
+dataset_name = "music"
+TPS_DIR = '../data/%s' % dataset_name
+# TP_file = os.path.join(TPS_DIR, 'Musical_Instruments_5.json')
+TP_file = os.path.join(TPS_DIR, 'Digital_Music_5.json')
 
 f = open(TP_file)
 users_id = []
@@ -55,6 +57,15 @@ unique_sid = itemcount.index
 item2id = dict((sid, i) for (i, sid) in enumerate(unique_sid))
 user2id = dict((uid, i) for (i, uid) in enumerate(unique_uid))
 
+user2id_json = json.dumps(user2id)
+user2id_file = open('../data/%s/user2id.json' % dataset_name, 'w')
+user2id_file.write(user2id_json)
+user2id_file.close()
+item2id_json = json.dumps(item2id)
+item2id_file = open('../data/%s/item2id.json' % dataset_name, 'w')
+item2id_file.write(item2id_json)
+item2id_file.close()
+
 
 def numerize(tp):
     # uid = map(lambda x: user2id[x], tp['user_id'])
@@ -86,9 +97,9 @@ test_idx[test] = True
 
 tp_test = tp_1[test_idx]
 tp_valid = tp_1[~test_idx]
-tp_train.to_csv(os.path.join(TPS_DIR, 'instruments_train.csv'), index=False, header=None)
-tp_valid.to_csv(os.path.join(TPS_DIR, 'instruments_valid.csv'), index=False, header=None)
-tp_test.to_csv(os.path.join(TPS_DIR, 'instruments_test.csv'), index=False, header=None)
+tp_train.to_csv(os.path.join(TPS_DIR, '%s_train.csv' % dataset_name), index=False, header=None)
+tp_valid.to_csv(os.path.join(TPS_DIR, '%s_valid.csv' % dataset_name), index=False, header=None)
+tp_test.to_csv(os.path.join(TPS_DIR, '%s_test.csv' % dataset_name), index=False, header=None)
 
 user_reviews = {}
 item_reviews = {}

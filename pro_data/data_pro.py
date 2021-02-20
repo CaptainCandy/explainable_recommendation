@@ -8,7 +8,7 @@ import csv
 import dill as pickle
 import os
 
-dataset_name = "instruments"
+dataset_name = "music"
 tf.flags.DEFINE_string("valid_data", "../data/%s/%s_valid.csv" % (dataset_name, dataset_name), " Data for validation")
 tf.flags.DEFINE_string("test_data", "../data/%s/%s_test.csv" % (dataset_name, dataset_name), "Data for testing")
 tf.flags.DEFINE_string("train_data", "../data/%s/%s_train.csv" % (dataset_name, dataset_name), "Data for training")
@@ -111,12 +111,25 @@ def build_vocab(sentences1, sentences2):
     vocabulary_inv2 = list(sorted(vocabulary_inv2))
     # Mapping from word to index
     vocabulary2 = {x: i for i, x in enumerate(vocabulary_inv2)}
+
+    vocab_list1 = list(vocabulary1.keys())
+    vocab_file = open("../data/%s/vocabulary_all.txt" % dataset_name, "w")
+    vocab_list2 = list(vocabulary2.keys())
+    for word in vocab_list2:
+        if word not in vocabulary1:
+            vocab_list1.append(word)
+    for word in vocab_list1:
+        vocab_file.write(word)
+        vocab_file.write('\n')
+    vocab_file.close()
+    print("len of vocabulary_all: ", len(vocab_list1))
+
     return [vocabulary1, vocabulary_inv1, vocabulary2, vocabulary_inv2]
 
 
 def build_input_data(u_text, i_text, vocabulary_u, vocabulary_i):
     """
-    Maps sentencs and labels to vectors based on a vocabulary.
+    Maps sentences and labels to vectors based on a vocabulary.
     """
     l = len(u_text)
     u_text2 = {}
@@ -146,11 +159,9 @@ def load_data(train_data, valid_data, user_review, item_review, user_rid, item_r
     print("load data done")
     u_text = pad_sentences(u_text, u_len, u2_len)
     reid_user_train, reid_user_valid = pad_reviewid(reid_user_train, reid_user_valid, u_len, item_num + 1)
-
     print("pad user done")
     i_text = pad_sentences(i_text, i_len, i2_len)
     reid_item_train, reid_item_valid = pad_reviewid(reid_item_train, reid_item_valid, i_len, user_num + 1)
-
     print("pad item done")
 
     user_voc = [xx for x in u_text.values() for xx in x]
@@ -278,6 +289,7 @@ def load_data_and_labels(train_data, valid_data, user_review, item_review, user_
     review_len_i = np.array([len(j) for i in i_text.values() for j in i])
     y2 = np.sort(review_len_i)
     i2_len = y2[int(0.9 * len(review_len_i)) - 1]
+
     print("u_len:", u_len)
     print("i_len:", i_len)
     print("u2_len:", u2_len)
@@ -286,6 +298,7 @@ def load_data_and_labels(train_data, valid_data, user_review, item_review, user_
     item_num = len(i_text)
     print("user_num:", user_num)
     print("item_num:", item_num)
+
     return [u_text, i_text, y_train, y_valid, u_len, i_len, u2_len, i2_len, uid_train,
             iid_train, uid_valid, iid_valid, user_num,
             item_num, reid_user_train, reid_item_train, reid_user_valid, reid_item_valid]
@@ -343,6 +356,11 @@ if __name__ == '__main__':
     para['u_text'] = u_text
     para['i_text'] = i_text
     output = open(os.path.join(TPS_DIR, ('%s.para' % dataset_name)), 'wb')
-
     # Pickle dictionary using protocol 0.
     pickle.dump(para, output)
+
+    vocab_inv = {}
+    vocab_inv['user'] = vocabulary_inv_user
+    vocab_inv['item'] = vocabulary_inv_item
+    output = open(os.path.join(TPS_DIR, ('%s.vocab' % dataset_name)), 'wb')
+    pickle.dump(vocab_inv, output)
