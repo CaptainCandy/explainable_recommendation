@@ -54,8 +54,8 @@ def get_count(tp, id):
 usercount, itemcount = get_count(data, 'user_id'), get_count(data, 'item_id')
 unique_uid = usercount.index
 unique_sid = itemcount.index
-item2id = dict((sid, i) for (i, sid) in enumerate(unique_sid))
 user2id = dict((uid, i) for (i, uid) in enumerate(unique_uid))
+item2id = dict((sid, i) for (i, sid) in enumerate(unique_sid))
 
 user2id_json = json.dumps(user2id)
 user2id_file = open('../data/%s/user2id.json' % dataset_name, 'w')
@@ -68,8 +68,6 @@ item2id_file.close()
 
 
 def numerize(tp):
-    # uid = map(lambda x: user2id[x], tp['user_id'])
-    # sid = map(lambda x: item2id[x], tp['item_id'])
     tp['user_id'] = tp['user_id'].apply(lambda x: user2id[x])
     tp['item_id'] = tp['item_id'].apply(lambda x: item2id[x])
     return tp
@@ -121,12 +119,12 @@ for i in data.values:
 
 for i in data2.values:
     if i[0] in user_reviews:
-        l = 1
+        continue
     else:
         user_rid[i[0]] = [0]
         user_reviews[i[0]] = ['0']
     if i[1] in item_reviews:
-        l = 1
+        continue
     else:
         item_reviews[i[1]] = [0]
         item_rid[i[1]] = ['0']

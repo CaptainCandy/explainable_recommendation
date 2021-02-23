@@ -111,7 +111,7 @@ def build_vocab(sentences1, sentences2):
     vocabulary_inv2 = list(sorted(vocabulary_inv2))
     # Mapping from word to index
     vocabulary2 = {x: i for i, x in enumerate(vocabulary_inv2)}
-
+    
     vocab_list1 = list(vocabulary1.keys())
     vocab_file = open("../data/%s/vocabulary_all.txt" % dataset_name, "w")
     vocab_list2 = list(vocabulary2.keys())
@@ -240,13 +240,13 @@ def load_data_and_labels(train_data, valid_data, user_review, item_review, user_
             for s in item_reviews[int(line[1])]:
                 s1 = clean_str(s)
                 s1 = s1.split(" ")
-
                 i_text[int(line[1])].append(s1)
             i_rid[int(line[1])] = []
             for s in item_rids[int(line[1])]:
                 i_rid[int(line[1])].append(int(s))
             reid_item_train.append(i_rid[int(line[1])])
         y_train.append(float(line[2]))
+
     print("valid")
     reid_user_valid = []
     reid_item_valid = []
@@ -280,15 +280,19 @@ def load_data_and_labels(train_data, valid_data, user_review, item_review, user_
     x = np.sort(review_num_u)
     u_len = x[int(0.9 * len(review_num_u)) - 1]
     review_len_u = np.array([len(j) for i in u_text.values() for j in i])
-    x2 = np.sort(review_len_u)
-    u2_len = x2[int(0.9 * len(review_len_u)) - 1]
+    # x2 = np.sort(review_len_u)
+    x2 = np.mean(review_len_u)
+    # u2_len = x2[int(0.9 * len(review_len_u)) - 1]
+    u2_len = int(x2)
 
     review_num_i = np.array([len(x) for x in i_text.values()])
     y = np.sort(review_num_i)
     i_len = y[int(0.9 * len(review_num_i)) - 1]
     review_len_i = np.array([len(j) for i in i_text.values() for j in i])
-    y2 = np.sort(review_len_i)
-    i2_len = y2[int(0.9 * len(review_len_i)) - 1]
+    # y2 = np.sort(review_len_i)
+    y2 = np.mean(review_len_i)
+    # i2_len = y2[int(0.9 * len(review_len_i)) - 1]
+    i2_len = int(y2)
 
     print("u_len:", u_len)
     print("i_len:", i_len)

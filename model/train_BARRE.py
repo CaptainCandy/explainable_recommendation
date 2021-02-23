@@ -1,10 +1,10 @@
 '''
-NARRE
+BARRE
 @author:
-Chong Chen (cstchenc@163.com)
+Xinze Tang
 
 @ created:
-27/8/2017
+23/2/2021
 @references:
 
 '''
@@ -15,29 +15,26 @@ import tensorflow as tf
 import pickle
 import time
 import matplotlib.pyplot as plt
-import NARRE
+import BARRE
 from tensorflow.python import debug as tf_debug
 from tqdm import tqdm
 
 
 dataset_name = "music"
-tf.flags.DEFINE_string("word2vec", "../data/GoogleNews-vectors-negative300.txt",
-                       "Word2vec file with pre-trained embeddings (default: None)")
-tf.flags.DEFINE_string("valid_data", "../data/%s/%s.test" % (dataset_name, dataset_name), " Data for validation")
-tf.flags.DEFINE_string("para_data", "../data/%s/%s.para" % (dataset_name, dataset_name), "Data parameters")
-tf.flags.DEFINE_string("train_data", "../data/%s/%s.train" % (dataset_name, dataset_name), "Data for training")
+tf.flags.DEFINE_string("valid_data", "../data/%s_bert/%s.test" % (dataset_name, dataset_name), " Data for validation")
+tf.flags.DEFINE_string("para_data", "../data/%s_bert/%s.para" % (dataset_name, dataset_name), "Data parameters")
+tf.flags.DEFINE_string("train_data", "../data/%s_bert/%s.train" % (dataset_name, dataset_name), "Data for training")
 # ==================================================
 
 # Model Hyperparameters
-# tf.flags.DEFINE_string("word2vec", "./data/rt-polaritydata/google.bin", "Word2vec file with pre-trained embeddings (default: None)")
-tf.flags.DEFINE_integer("embedding_dim", 300, "Dimensionality of character embedding ")
-tf.flags.DEFINE_string("filter_sizes", "3,4,5", "Comma-separated filter sizes ")
-tf.flags.DEFINE_integer("num_filters", 100, "Number of filters per filter size")
+tf.flags.DEFINE_integer("embedding_dim", 768, "Dimensionality of character embedding ")
+# tf.flags.DEFINE_string("filter_sizes", "3,4,5", "Comma-separated filter sizes ")
+# tf.flags.DEFINE_integer("num_filters", 100, "Number of filters per filter size")
 tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability ")
 tf.flags.DEFINE_float("l2_reg_lambda", 0.001, "L2 regularizaion lambda")
 # Training parameters
-tf.flags.DEFINE_integer("batch_size", 16, "Batch Size ")
-tf.flags.DEFINE_integer("num_epochs", 50, "Number of training epochs ")
+tf.flags.DEFINE_integer("batch_size", 64, "Batch Size ")
+tf.flags.DEFINE_integer("num_epochs", 100, "Number of training epochs ")
 # Misc Parameters
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
 tf.flags.DEFINE_boolean("log_device_placement", False, "Log placement of ops on devices")
@@ -96,45 +93,45 @@ def dev_step(u_batch, i_batch, uid, iid, reuid, reiid, y_batch, writer=None):
     return [loss, accuracy, mae]
 
 
-def load_word2vec_embedding(vocab_size, embedding_size, vocabulary, type):
-    """
-
-    Args:
-        vocab_size:
-        embedding_size:
-        vocabulary: vocabulary_user or vocabulary_item
-        type: "user" or "item"
-
-    Returns:
-        initW
-    """
-    # print("./%s_initW_%s.npy" % (type, dataset_name))
-    if os.path.exists("./%s_initW_%s.npy" % (type, dataset_name)):
-        initW = np.load("./%s_initW_%s.npy" % (type, dataset_name))
-        return initW
-
-    initW = np.random.uniform(-1.0, 1.0, (vocab_size, embedding_size))
-    # load any vectors from the word2vec
-    print("\nLoad word2vec i file {}\n".format(FLAGS.word2vec))
-    with open(FLAGS.word2vec, "r", encoding="utf-8") as f:
-        header = f.readline()
-        vocab_size_google, layer1_size = map(int, header.split())
-        # binary_len = np.dtype('float32').itemsize * layer1_size
-        for line in tqdm(range(vocab_size_google), ncols=80):
-            word = []
-            while True:
-                ch = f.read(1)
-                if ch == ' ':
-                    word = ''.join(word)
-                    break
-                word.append(ch)
-            if word in vocabulary:
-                idx = vocabulary[word]
-                initW[idx] = np.fromstring(f.readline(), dtype='float32', count=FLAGS.embedding_dim)
-            else:
-                f.readline()
-    np.save("./%s_initW_%s.npy" % (type, dataset_name), initW)
-    return initW
+# def load_word2vec_embedding(vocab_size, embedding_size, vocabulary, type):
+#     """
+#
+#     Args:
+#         vocab_size:
+#         embedding_size:
+#         vocabulary: vocabulary_user or vocabulary_item
+#         type: "user" or "item"
+#
+#     Returns:
+#         initW
+#     """
+#     # print("./%s_initW_%s.npy" % (type, dataset_name))
+#     if os.path.exists("./%s_initW_%s.npy" % (type, dataset_name)):
+#         initW = np.load("./%s_initW_%s.npy" % (type, dataset_name))
+#         return initW
+#
+#     initW = np.random.uniform(-1.0, 1.0, (vocab_size, embedding_size))
+#     # load any vectors from the word2vec
+#     print("\nLoad word2vec i file {}\n".format(FLAGS.word2vec))
+#     with open(FLAGS.word2vec, "r", encoding="utf-8") as f:
+#         header = f.readline()
+#         vocab_size_google, layer1_size = map(int, header.split())
+#         # binary_len = np.dtype('float32').itemsize * layer1_size
+#         for line in tqdm(range(vocab_size_google), ncols=80):
+#             word = []
+#             while True:
+#                 ch = f.read(1)
+#                 if ch == ' ':
+#                     word = ''.join(word)
+#                     break
+#                 word.append(ch)
+#             if word in vocabulary:
+#                 idx = vocabulary[word]
+#                 initW[idx] = np.fromstring(f.readline(), dtype='float32', count=FLAGS.embedding_dim)
+#             else:
+#                 f.readline()
+#     np.save("./%s_initW_%s.npy" % (type, dataset_name), initW)
+#     return initW
 
 
 def plot_train_process(rmse_train, rmse_test, mae_train, mae_test):
@@ -171,22 +168,23 @@ if __name__ == '__main__':
     item_num = para['item_num']
     review_num_u = para['review_num_u']
     review_num_i = para['review_num_i']
-    review_len_u = para['review_len_u']
-    review_len_i = para['review_len_i']
-    vocabulary_user = para['user_vocab']
-    vocabulary_item = para['item_vocab']
+    # vocabulary_user = para['user_vocab']
+    # vocabulary_item = para['item_vocab']
     train_length = para['train_length']
     test_length = para['test_length']
-    u_text = para['u_text']
-    i_text = para['i_text']
+    # u_text = para['u_text']
+    # i_text = para['i_text']
+    u_text_embeds = para['u_text_embeds']
+    i_text_embeds = para['i_text_embeds']
 
     random_seed = 2021
-    print(user_num)
-    print(item_num)
-    print(review_num_u)
-    print(review_len_u)
-    print(review_num_i)
-    print(review_len_i)
+    print("user_num", user_num)
+    print("item_num", item_num)
+    print("review_num_u", review_num_u)
+    print("review_num_i", review_num_i)
+    print("train_length", train_length)
+    print("test_length", test_length)
+
     with tf.Graph().as_default():
 
         session_conf = tf.ConfigProto(
@@ -198,26 +196,21 @@ if __name__ == '__main__':
         # sess = tf_debug.LocalCLIDebugWrapperSession(sess)
         # sess.add_tensor_filter("has_inf_or_nan", tf_debug.has_inf_or_nan) # run -f has_inf_or_nan
         with sess.as_default():
-            deep = NARRE.NARRE(
+            deep = BARRE.BARRE(
                 review_num_u=review_num_u,
                 review_num_i=review_num_i,
-                review_len_u=review_len_u,
-                review_len_i=review_len_i,
                 user_num=user_num,
                 item_num=item_num,
                 num_classes=1,
-                user_vocab_size=len(vocabulary_user),
-                item_vocab_size=len(vocabulary_item),
+                # user_vocab_size=len(vocabulary_user),
+                # item_vocab_size=len(vocabulary_item),
                 embedding_size=FLAGS.embedding_dim,
                 embedding_id=32,
-                filter_sizes=list(map(int, FLAGS.filter_sizes.split(","))),
-                num_filters=FLAGS.num_filters,
                 l2_reg_lambda=FLAGS.l2_reg_lambda,
                 attention_size=32,
                 n_latent=32)
             tf.set_random_seed(random_seed)
-            print("user_num", user_num)
-            print("item_num", item_num)
+
             global_step = tf.Variable(0, name="global_step", trainable=False)
 
             optimizer = tf.train.AdamOptimizer(0.0001, beta1=0.9, beta2=0.999,
@@ -236,29 +229,26 @@ if __name__ == '__main__':
 
             saver = tf.train.Saver()
 
-            if FLAGS.word2vec:
-                # initial matrix with random uniform
+            # if FLAGS.word2vec:
+            #     # initial matrix with random uniform
+            #
+            #     initW = load_word2vec_embedding(len(vocabulary_user), FLAGS.embedding_dim, vocabulary_user, "user")
+            #     sess.run(deep.W1.assign(initW))
+            #
+            #     initW = load_word2vec_embedding(len(vocabulary_item), FLAGS.embedding_dim, vocabulary_item, "item")
+            #     sess.run(deep.W2.assign(initW))
 
-                initW = load_word2vec_embedding(len(vocabulary_user), FLAGS.embedding_dim, vocabulary_user, "user")
-                sess.run(deep.W1.assign(initW))
-
-                initW = load_word2vec_embedding(len(vocabulary_item), FLAGS.embedding_dim, vocabulary_item, "item")
-                sess.run(deep.W2.assign(initW))
-
-            best_mae = 5
-            best_rmse = 5
+            best_mae = 10
+            best_rmse = 10
             train_mae = 0
             train_rmse = 0
 
             pkl_file = open(FLAGS.train_data, 'rb')
-
             train_data = pickle.load(pkl_file)
-
             train_data = np.array(train_data)
             pkl_file.close()
 
             pkl_file = open(FLAGS.valid_data, 'rb')
-
             test_data = pickle.load(pkl_file)
             test_data = np.array(test_data)
             pkl_file.close()
@@ -269,10 +259,12 @@ if __name__ == '__main__':
             ll = int(len(train_data) / batch_size)
             print("batch_num_all: ", ll)
 
+            # 训练过程记录
             rmse_train_listforplot = []
             mae_train_listforplot = []
             rmse_test_listforplot = []
             mae_test_listforplot = []
+
             saver = tf.train.Saver(max_to_keep=1)
 
             for epoch in tqdm(range(FLAGS.num_epochs), ncols=40):
@@ -290,8 +282,8 @@ if __name__ == '__main__':
                     u_batch = []
                     i_batch = []
                     for i in range(len(uid)):
-                        u_batch.append(u_text[uid[i][0]])
-                        i_batch.append(i_text[iid[i][0]])
+                        u_batch.append(u_text_embeds[uid[i][0]])
+                        i_batch.append(i_text_embeds[iid[i][0]])
                     u_batch = np.array(u_batch)
                     i_batch = np.array(i_batch)
 
@@ -368,8 +360,8 @@ if __name__ == '__main__':
                     u_valid = []
                     i_valid = []
                     for i in range(len(userid_valid)):
-                        u_valid.append(u_text[userid_valid[i][0]])
-                        i_valid.append(i_text[itemid_valid[i][0]])
+                        u_valid.append(u_text_embeds[userid_valid[i][0]])
+                        i_valid.append(i_text_embeds[itemid_valid[i][0]])
                     u_valid = np.array(u_valid)
                     i_valid = np.array(i_valid)
 
