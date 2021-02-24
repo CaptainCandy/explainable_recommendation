@@ -1,8 +1,8 @@
 # coding=utf-8
 
 import sys
-sys.path.append('C:\\Users\\ZJUSO\\Documents\\CaptainCandy\\bert-utils')
-from extract_feature import BertVector
+# sys.path.append('C:\\Users\\ZJUSO\\Documents\\CaptainCandy\\bert-utils')
+from bert_utils.extract_feature import BertVector
 
 import numpy as np
 import tensorflow as tf
@@ -13,27 +13,27 @@ from tqdm import tqdm
 
 dataset_name = "movies"
 
-f = open("../data/%s/Movies_and_TV_5.json" % dataset_name, "r")
-f_w = open("../data/%s_bert/reviews_all" % dataset_name, "wb")
-
-reviews_all = []
-null = 0
-for line in f:
-    js = json.loads(line)
-    if str(js['reviewerID']) == 'unknown':
-        print("reviewerID unknown")
-        continue
-    if str(js['asin']) == 'unknown':
-        print("asin unknown")
-        continue
-    try:
-        reviews_all.append(js["reviewText"])
-    except KeyError:
-        null += 1
-pickle.dump(reviews_all, f_w)
-f.close()
-f_w.close()
-print("reviews_all saved. %s null reviews jumped. " % null)
+# f = open("../data/%s/Movies_and_TV_5.json" % dataset_name, "r")
+# f_w = open("../data/%s_bert/reviews_all" % dataset_name, "wb")
+#
+# reviews_all = []
+# null = 0
+# for line in f:
+#     js = json.loads(line)
+#     if str(js['reviewerID']) == 'unknown':
+#         print("reviewerID unknown")
+#         continue
+#     if str(js['asin']) == 'unknown':
+#         print("asin unknown")
+#         continue
+#     try:
+#         reviews_all.append(js["reviewText"])
+#     except KeyError:
+#         null += 1
+# pickle.dump(reviews_all, f_w)
+# f.close()
+# f_w.close()
+# print("reviews_all saved. %s null reviews jumped. " % null)
 
 reviews_all = []
 reviews_embeddings = []
