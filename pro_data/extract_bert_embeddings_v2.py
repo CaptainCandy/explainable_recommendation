@@ -29,38 +29,59 @@ dataset_name = "kindle"
 # f_w.close()
 # print("reviews_all saved. %s null reviews jumped. " % null)
 
-reviews_all = []
-with open("../data/%s_bert/reviews_all.txt" % dataset_name, "r") as f:
-    for line in f:
-        # :-1是为了把最后的回车去掉
-        l = "[CLS]" + str(line[:-1]) + "[SEP]"
-        reviews_all.append(l)
-f.close()
-
+# reviews_all = []
+# with open("../data/%s_bert/reviews_all.txt" % dataset_name, "r") as f:
+#     for line in f:
+#         # :-1是为了把最后的回车去掉
+#         l = "[CLS]" + str(line[:-1]) + "[SEP]"
+#         reviews_all.append(l)
+# f.close()
+#
 tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 model = TFBertModel.from_pretrained("bert-base-uncased", output_hidden_states = True) # 如果想要获取到各个隐层值需要如此设置
+max_len = 512
 
-# Convert token to vocabulary indices
-print("converting tokens to vocab ids...")
-token = []
-for r in tqdm(reviews_all, ncols=80):
-    tokenized_string = tokenizer.tokenize(r)
-    tokens_ids = tokenizer.convert_tokens_to_ids(tokenized_string)
-    token.append(tokens_ids)
-pickle.dump(token, open("../data/%s_bert/reviews_token" % dataset_name, "wb"))
-# token = pickle.load(open("../data/%s_bert/reviews_token" % dataset_name, "rb"))
+# # Convert token to vocabulary indices
+# print("converting tokens to vocab ids...")
+# token = []
+# for r in tqdm(reviews_all, ncols=80):
+#     tokenized_string = tokenizer.tokenize(r)
+#     tokens_ids = tokenizer.convert_tokens_to_ids(tokenized_string)
+#     token.append(tokens_ids)
+# pickle.dump(token, open("../data/%s_bert/reviews_token" % dataset_name, "wb"))
+token = pickle.load(open("../data/%s_bert/reviews_token" % dataset_name, "rb"))
 
 print("extracting embeddings...")
 outputs = []
-for t in tqdm(token, ncols=80):
-    out = model(tf.convert_to_tensor([t])) # encoded_layers, pooled_output
-    # 2代表hidden_states, -2代表倒数第二层, 0代表输出的第一个句子
-    outputs.append(out[2][-2][0])
+num = len(token)
+# batch_size = 32是经过测试后选择的，最大利用GPU且不会OOM
+batch_size = 32
+for i in tqdm(range(num//batch_size + 1)):
+    t_batch = token[batch_size*i:batch_size*i+batch_size]
+    # padding tokens
+    for idx, t in enumerate(t_batch):
+        seq_len = len(t)
+        if seq_len > max_len:
+            t_batch[idx] = t[:max_len]
+        elif seq_len < max_len:
+            for j in range(max_len - seq_len):
+                t.append(0)
+    out = model(tf.convert_to_tensor(t_batch))
+    second_last_layer = out[2][-2]
+    for j in range(len(second_last_layer)):
+        outputs.append(second_last_layer[j])
+# for t in tqdm(token, ncols=80):
+#     if len(t) > max_len:
+#         t = t[:max_len]
+#     out = model(tf.convert_to_tensor([t])) # encoded_layers, pooled_output
+#     # 2代表hidden_states, -2代表倒数第二层, 0代表输出的第一个句子
+#     outputs.append(out[2][-2][0])
+pickle.dump(outputs, open("../data/%s_bert/outputs" % dataset_name, 'wb'))
 
 reviews_embeddings = []
 for token_vecs in tqdm(outputs, ncols=80):
-    # Calculate the average of all input token vectors.
-    sentence_embedding = tf.reduce_mean(token_vecs, axis=0)
+# Calculate the average of all input token vectors.
+    sentence_embedding = tf.math.reduce_mean(token_vecs, axis=0)
     reviews_embeddings.append(sentence_embedding)
 print(len(reviews_embeddings))
 pickle.dump(reviews_embeddings, open("../data/%s_bert/reviews_embeddings" % dataset_name, 'wb'))
