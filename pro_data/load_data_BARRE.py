@@ -46,7 +46,7 @@ for line in f:
         ratings.append(str(js['overall']))
     except KeyError:
         null += 1
-print("null:", null)
+print("%s null reviews jumped. " % null)
 reviews_embeds = pickle.load(open(embed_file, "rb"))
 data = pd.DataFrame({'user_id': pd.Series(users_id),
                      'item_id': pd.Series(items_id),

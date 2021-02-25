@@ -341,5 +341,6 @@ if __name__ == "__main__":
     #     question = input('question: ')
     #     v = bert.encode([question])
     #     print(str(v))
-    v = bert.encode("<pad>")
-    print(str(v))
+    string = 'this is a dog'
+    v = bert.encode([string])
+    print(v[:10])

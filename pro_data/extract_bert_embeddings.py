@@ -14,7 +14,7 @@ from tqdm import tqdm
 dataset_name = "movies"
 
 # f = open("../data/%s/Movies_and_TV_5.json" % dataset_name, "r")
-# f_w = open("../data/%s_bert/reviews_all" % dataset_name, "wb")
+# f_w = open("../data/%s_bert/reviews_all.txt" % dataset_name, "w")
 #
 # reviews_all = []
 # null = 0
@@ -27,22 +27,28 @@ dataset_name = "movies"
 #         print("asin unknown")
 #         continue
 #     try:
-#         reviews_all.append(js["reviewText"])
+#         f_w.write(js["reviewText"])
+#         f_w.write("\n")
 #     except KeyError:
 #         null += 1
-# pickle.dump(reviews_all, f_w)
 # f.close()
 # f_w.close()
 # print("reviews_all saved. %s null reviews jumped. " % null)
 
 reviews_all = []
 reviews_embeddings = []
-with open("../data/%s_bert/reviews_all" % dataset_name, "rb") as f:
+with open("../data/%s_bert/reviews_all.txt" % dataset_name, "r") as f:
     for line in f:
         reviews_all.append(line)
+f.close()
 bv = BertVector()
-for r in tqdm(reviews_all, ncols=80):
-    embedding = bv.encode([r])
-    reviews_embeddings.append(embedding)
+# 分batch扔进去的话还是很慢，居然还是size=1最快。。但都要100小时+
+batch_size = 1
+num = len(reviews_all)
+for i in tqdm(range(num//batch_size+1), ncols=80):
+    r_batch = reviews_all[batch_size*i:batch_size*i+batch_size]
+    embeddings = bv.encode(r_batch)
+    for embed in embeddings:
+        reviews_embeddings.append(embed)
 print(len(reviews_embeddings))
 pickle.dump(reviews_embeddings, open("../data/%s_bert/reviews_embeddings" % dataset_name, 'wb'))

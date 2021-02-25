@@ -35,11 +35,13 @@ with open("../data/%s_bert/reviews_all.txt" % dataset_name, "r") as f:
         # :-1是为了把最后的回车去掉
         l = "[CLS]" + str(line[:-1]) + "[SEP]"
         reviews_all.append(l)
+f.close()
 
 tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 model = TFBertModel.from_pretrained("bert-base-uncased", output_hidden_states = True) # 如果想要获取到各个隐层值需要如此设置
 
 # Convert token to vocabulary indices
+print("converting tokens to vocab ids...")
 token = []
 for r in tqdm(reviews_all, ncols=80):
     tokenized_string = tokenizer.tokenize(r)
@@ -57,8 +59,8 @@ for t in tqdm(token, ncols=80):
 
 reviews_embeddings = []
 for token_vecs in tqdm(outputs, ncols=80):
-# Calculate the average of all input token vectors.
-    sentence_embedding = tf.math.reduce_mean(token_vecs, axis=0)
+    # Calculate the average of all input token vectors.
+    sentence_embedding = tf.reduce_mean(token_vecs, axis=0)
     reviews_embeddings.append(sentence_embedding)
 print(len(reviews_embeddings))
 pickle.dump(reviews_embeddings, open("../data/%s_bert/reviews_embeddings" % dataset_name, 'wb'))
