@@ -35,7 +35,7 @@ for line in f:
     if str(js['asin']) == 'unknown':
         print("asin unknown")
         continue
-    reviews.append(js['reviewText'])
+    reviews.append(str(js['reviewText']))
     users_id.append(str(js['reviewerID']) + ',')
     items_id.append(str(js['asin']) + ',')
     ratings.append(str(js['overall']))
@@ -46,7 +46,7 @@ data = pd.DataFrame({'user_id': pd.Series(users_id),
 
 
 def get_count(tp, id):
-    playcount_groupbyid = tp[[id, 'ratings']].groupby(id, as_index=False)
+    playcount_groupbyid = tp[[id, 'ratings']].groupby(id, as_index=True)
     count = playcount_groupbyid.size()
     return count
 
@@ -57,14 +57,14 @@ unique_sid = itemcount.index
 user2id = dict((uid, i) for (i, uid) in enumerate(unique_uid))
 item2id = dict((sid, i) for (i, sid) in enumerate(unique_sid))
 
-user2id_json = json.dumps(user2id)
-user2id_file = open('../data/%s/user2id.json' % dataset_name, 'w')
-user2id_file.write(user2id_json)
-user2id_file.close()
-item2id_json = json.dumps(item2id)
-item2id_file = open('../data/%s/item2id.json' % dataset_name, 'w')
-item2id_file.write(item2id_json)
-item2id_file.close()
+# user2id_json = json.dumps(user2id)
+# user2id_file = open('../data/%s/user2id.json' % dataset_name, 'w')
+# user2id_file.write(user2id_json)
+# user2id_file.close()
+# item2id_json = json.dumps(item2id)
+# item2id_file = open('../data/%s/item2id.json' % dataset_name, 'w')
+# item2id_file.write(item2id_json)
+# item2id_file.close()
 
 
 def numerize(tp):

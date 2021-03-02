@@ -15,22 +15,27 @@ import pandas as pd
 import numpy as np
 import dill as pickle
 
-dataset_name = "movies"
+dataset_name = "instruments"
 NARRE_DIR = '../data/%s' % dataset_name
 TPS_DIR = '../data/%s_bert' % dataset_name
-# TP_file = os.path.join(TPS_DIR, 'Musical_Instruments_5.json')
-TP_file = os.path.join(NARRE_DIR, 'Movies_and_TV_5.json')
+TP_file = os.path.join(NARRE_DIR, 'Musical_Instruments_5.json')
+# TP_file = os.path.join(NARRE_DIR, 'Movies_and_TV_5.json')
+# TP_file = os.path.join(NARRE_DIR, 'Kindle_Store_5.json')
+# TP_file = os.path.join(NARRE_DIR, 'Toys_and_Games_5.json')
 embed_file = os.path.join(TPS_DIR, 'reviews_embeddings')
 embedding_size = 768
 
 f = open(TP_file)
+r_f = open(embed_file, "rb")
 users_id = []
 items_id = []
 ratings = []
 reviews = []
+reviews_embeds = []
 np.random.seed(2017)
-
 null = 0
+# 读取评分
+print("loading ratings...")
 for line in f:
     js = json.loads(line)
     if str(js['reviewerID']) == 'unknown':
@@ -40,14 +45,25 @@ for line in f:
         print("asin unknown")
         continue
     try:
-        reviews.append(js['reviewText'])
+        reviews.append(str(js['reviewText']))
         users_id.append(str(js['reviewerID']) + ',')
         items_id.append(str(js['asin']) + ',')
         ratings.append(str(js['overall']))
     except KeyError:
         null += 1
+print("num of reviews:", len(reviews))
+# 读取评论bert embeddings
+print("loading embeddings...")
+while True:
+    try:
+        embed = pickle.load(r_f)
+        reviews_embeds.append(embed)
+    except EOFError:
+        break
+f.close()
+r_f.close()
+print("num of embeds:", len(reviews_embeds))
 print("%s null reviews jumped. " % null)
-reviews_embeds = pickle.load(open(embed_file, "rb"))
 data = pd.DataFrame({'user_id': pd.Series(users_id),
                      'item_id': pd.Series(items_id),
                      'ratings': pd.Series(ratings),
@@ -56,7 +72,7 @@ data = pd.DataFrame({'user_id': pd.Series(users_id),
 
 
 def get_count(tp, id):
-    playcount_groupbyid = tp[[id, 'ratings']].groupby(id, as_index=False)
+    playcount_groupbyid = tp[[id, 'ratings']].groupby(id, as_index=True)
     count = playcount_groupbyid.size()
     return count
 
@@ -117,35 +133,35 @@ user_reviews_embeddings = {}
 item_reviews_embeddings = {}
 for i in data.values:
     if i[0] in user_reviews:
-        user_reviews[i[0]].append(i[3])
         user_rid[i[0]].append(i[1])
-        user_reviews_embeddings[i[0]].append(i[4][0])
+        user_reviews[i[0]].append(i[3])
+        user_reviews_embeddings[i[0]].append(i[4])
     else:
         user_rid[i[0]] = [i[1]]
         user_reviews[i[0]] = [i[3]]
-        user_reviews_embeddings[i[0]] = [i[4][0]]
+        user_reviews_embeddings[i[0]] = [i[4]]
     if i[1] in item_reviews:
-        item_reviews[i[1]].append(i[3])
         item_rid[i[1]].append(i[0])
-        item_reviews_embeddings[i[1]].append(i[4][0])
+        item_reviews[i[1]].append(i[3])
+        item_reviews_embeddings[i[1]].append(i[4])
     else:
-        item_reviews[i[1]] = [i[3]]
         item_rid[i[1]] = [i[0]]
-        item_reviews_embeddings[i[1]] = [i[4][0]]
+        item_reviews[i[1]] = [i[3]]
+        item_reviews_embeddings[i[1]] = [i[4]]
 
 for i in data2.values:
     if i[0] in user_reviews:
-        continue
+        pass
     else:
         user_rid[i[0]] = [0]
         user_reviews[i[0]] = ['0']
-        user_reviews_embeddings[i[0]] = np.ones(embedding_size)
+        user_reviews_embeddings[i[0]] = [np.ones(embedding_size)]
     if i[1] in item_reviews:
-        continue
+        pass
     else:
-        item_reviews[i[1]] = [0]
-        item_rid[i[1]] = ['0']
-        item_reviews_embeddings[i[1]] = np.ones(embedding_size)
+        item_rid[i[1]] = [0]
+        item_reviews[i[1]] = ['0']
+        item_reviews_embeddings[i[1]] = [np.ones(embedding_size)]
 
 pickle.dump(user_reviews, open(os.path.join(TPS_DIR, 'user_review'), 'wb'))
 pickle.dump(item_reviews, open(os.path.join(TPS_DIR, 'item_review'), 'wb'))

@@ -11,8 +11,8 @@ Xinze Tang
 
 import os
 import numpy as np
-import tensorflow as tf
-import pickle
+import tensorflow.compat.v1 as tf
+import dill as pickle
 import time
 import matplotlib.pyplot as plt
 import BARRE
@@ -20,21 +20,23 @@ from tensorflow.python import debug as tf_debug
 from tqdm import tqdm
 
 
-dataset_name = "music"
+dataset_name = "instruments"
 tf.flags.DEFINE_string("valid_data", "../data/%s_bert/%s.test" % (dataset_name, dataset_name), " Data for validation")
 tf.flags.DEFINE_string("para_data", "../data/%s_bert/%s.para" % (dataset_name, dataset_name), "Data parameters")
 tf.flags.DEFINE_string("train_data", "../data/%s_bert/%s.train" % (dataset_name, dataset_name), "Data for training")
+tf.flags.DEFINE_string("u_text_embeds_input", "../data/%s_bert/u_text_embeds_input.npy" % dataset_name, "User text embedding")
+tf.flags.DEFINE_string("i_text_embeds_input", "../data/%s_bert/i_text_embeds_input.npy" % dataset_name, "Item text embedding")
 # ==================================================
 
 # Model Hyperparameters
-tf.flags.DEFINE_integer("embedding_dim", 768, "Dimensionality of character embedding ")
+tf.flags.DEFINE_integer("embedding_dim", 768, "Dimensionality of character embedding")
 # tf.flags.DEFINE_string("filter_sizes", "3,4,5", "Comma-separated filter sizes ")
 # tf.flags.DEFINE_integer("num_filters", 100, "Number of filters per filter size")
-tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability ")
+tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability")
 tf.flags.DEFINE_float("l2_reg_lambda", 0.001, "L2 regularizaion lambda")
 # Training parameters
-tf.flags.DEFINE_integer("batch_size", 64, "Batch Size ")
-tf.flags.DEFINE_integer("num_epochs", 100, "Number of training epochs ")
+tf.flags.DEFINE_integer("batch_size", 16384, "Batch Size")
+tf.flags.DEFINE_integer("num_epochs", 100, "Number of training epochs")
 # Misc Parameters
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
 tf.flags.DEFINE_boolean("log_device_placement", False, "Log placement of ops on devices")
@@ -160,9 +162,12 @@ if __name__ == '__main__':
     print("")
 
     print("Loading data...")
-    print(FLAGS.para_data)
-    pkl_file = open(FLAGS.para_data, 'rb')
-    para = pickle.load(pkl_file)
+    t0 = time.time()
+    para = pickle.load(open(FLAGS.para_data, 'rb'))
+    u_text_embeds = np.load(FLAGS.u_text_embeds_input, allow_pickle=True)
+    i_text_embeds = np.load(FLAGS.i_text_embeds_input, allow_pickle=True)
+    u_text_embeds = dict(u_text_embeds.item())
+    i_text_embeds = dict(i_text_embeds.item())
 
     user_num = para['user_num']
     item_num = para['item_num']
@@ -174,16 +179,20 @@ if __name__ == '__main__':
     test_length = para['test_length']
     # u_text = para['u_text']
     # i_text = para['i_text']
-    u_text_embeds = para['u_text_embeds']
-    i_text_embeds = para['i_text_embeds']
+    # u_text_embeds = para['u_text_embeds']
+    # i_text_embeds = para['i_text_embeds']
 
     random_seed = 2021
     print("user_num", user_num)
     print("item_num", item_num)
+    print("user_num_real", len(u_text_embeds))
+    print("item_num_real", len(i_text_embeds))
     print("review_num_u", review_num_u)
     print("review_num_i", review_num_i)
     print("train_length", train_length)
     print("test_length", test_length)
+    t1 = time.time()
+    print("t1-t0:%.2f" % (t1 - t0))
 
     with tf.Graph().as_default():
 
@@ -213,7 +222,7 @@ if __name__ == '__main__':
 
             global_step = tf.Variable(0, name="global_step", trainable=False)
 
-            optimizer = tf.train.AdamOptimizer(0.0001, beta1=0.9, beta2=0.999,
+            optimizer = tf.train.AdamOptimizer(0.001, beta1=0.9, beta2=0.999,
                                                epsilon=1e-8).minimize(deep.loss, global_step=global_step)
             # optimizer = tf.train.GradientDescentOptimizer(0.0001).minimize(deep.loss, global_step=global_step)
             # optimizer = tf.train.GradientDescentOptimizer(0.01)
@@ -245,12 +254,12 @@ if __name__ == '__main__':
 
             pkl_file = open(FLAGS.train_data, 'rb')
             train_data = pickle.load(pkl_file)
-            train_data = np.array(train_data)
+            train_data = np.asarray(train_data)
             pkl_file.close()
 
             pkl_file = open(FLAGS.valid_data, 'rb')
             test_data = pickle.load(pkl_file)
-            test_data = np.array(test_data)
+            test_data = np.asarray(test_data)
             pkl_file.close()
 
             data_size_train = len(train_data)
@@ -265,30 +274,42 @@ if __name__ == '__main__':
             rmse_test_listforplot = []
             mae_test_listforplot = []
 
+
             saver = tf.train.Saver(max_to_keep=1)
 
-            for epoch in tqdm(range(FLAGS.num_epochs), ncols=40):
+            for epoch in tqdm(range(FLAGS.num_epochs), ncols=80):
                 # Shuffle the data at each epoch
+                # t1 = time.time()
                 shuffle_indices = np.random.permutation(np.arange(data_size_train))
                 shuffled_data = train_data[shuffle_indices]
+                # t2 = time.time()
+                # print("t2-t1:%.2f" % (t2 - t1))
                 # for batch_num in tqdm(range(ll), ncols=10):
                 for batch_num in range(ll):
-
                     start_index = batch_num * batch_size
                     end_index = min((batch_num + 1) * batch_size, data_size_train)
                     data_train = shuffled_data[start_index:end_index]
 
                     uid, iid, reuid, reiid, y_batch = zip(*data_train)
+                    # t4 = time.time()
+                    # u_batch = np.zeros([batch_size, review_num_u, FLAGS.embedding_dim])
+                    # i_batch = np.zeros([batch_size, review_num_i, FLAGS.embedding_dim])
+                    # for i in range(batch_size):
+                    #     u_batch[i] = np.asarray(u_text_embeds[uid[i][0]])
+                    #     i_batch[i] = np.asarray(i_text_embeds[iid[i][0]])
                     u_batch = []
                     i_batch = []
-                    for i in range(len(uid)):
+                    for i in range(batch_size):
                         u_batch.append(u_text_embeds[uid[i][0]])
                         i_batch.append(i_text_embeds[iid[i][0]])
                     u_batch = np.array(u_batch)
                     i_batch = np.array(i_batch)
-
+                    # t5 = time.time()
+                    # print("t5-t4:%.2f" % (t5 - t4))
                     t_rmse, t_mae, u_a, i_a, fm = train_step(u_batch, i_batch, uid, iid, reuid, reiid, y_batch,
                                                              batch_num)
+                    # t6 = time.time()
+                    # print("t6-t5:%.2f" % (t6 - t5))
                     # print(t_rmse, t_mae)
                     current_step = tf.train.global_step(sess, global_step)
                     train_rmse += t_rmse
@@ -335,7 +356,7 @@ if __name__ == '__main__':
                     #         best_mae = mae
                     #     print("")
 
-                print(str(epoch) + ':\n')
+                print("epoch: " + str(epoch))
                 print("\nEvaluation:")
                 print("train: rmse, mae:", train_rmse / ll, train_mae / ll)
                 rmse_train_listforplot.append(train_rmse / ll)
@@ -350,6 +371,7 @@ if __name__ == '__main__':
                 accuracy_s = 0
                 mae_s = 0
 
+                t7 = time.time()
                 ll_test = int(len(test_data) / batch_size) + 1
                 for batch_num in range(ll_test):
                     start_index = batch_num * batch_size
@@ -369,6 +391,8 @@ if __name__ == '__main__':
                     loss_s = loss_s + len(u_valid) * loss
                     accuracy_s = accuracy_s + len(u_valid) * np.square(accuracy)
                     mae_s = mae_s + len(u_valid) * mae
+                t8 = time.time()
+                print("t8-t7:%.2f" % (t8 - t7))
                 print("loss_valid {:g}, rmse_valid {:g}, mae_valid {:g}".format(loss_s / test_length,
                                                                                 np.sqrt(accuracy_s / test_length),
                                                                                 mae_s / test_length))
