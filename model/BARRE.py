@@ -8,7 +8,7 @@ Xinze Tang
 @references:
 '''
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 
 class BARRE(object):
@@ -26,7 +26,7 @@ class BARRE(object):
         # self.input_i = tf.reshape(self.input_i, [-1, review_len_i, embedding_size, 1])
 
         self.input_reuid = tf.placeholder(tf.int32, [None, review_num_u], name='input_reuid')
-        self.input_reiid = tf.placeholder(tf.int32, [None, review_num_i], name='input_reuid')
+        self.input_reiid = tf.placeholder(tf.int32, [None, review_num_i], name='input_reiid')
         self.input_y = tf.placeholder(tf.float32, [None, 1], name="input_y")
         self.input_uid = tf.placeholder(tf.int32, [None, 1], name="input_uid")
         self.input_iid = tf.placeholder(tf.int32, [None, 1], name="input_iid")

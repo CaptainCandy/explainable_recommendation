@@ -2,10 +2,10 @@
 Data pre process
 
 @author:
-Chong Chen (cstchenc@163.com)
+Xinze Tang
 
 @ created:
-25/8/2017
+25/2/2021
 @references:
 '''
 import os
@@ -15,13 +15,17 @@ import pandas as pd
 import numpy as np
 import dill as pickle
 
-dataset_name = "instruments"
+dataset_name = "industrial"
 NARRE_DIR = '../data/%s' % dataset_name
 TPS_DIR = '../data/%s_bert' % dataset_name
-TP_file = os.path.join(NARRE_DIR, 'Musical_Instruments_5.json')
+# TP_file = os.path.join(NARRE_DIR, 'Musical_Instruments_5.json')
 # TP_file = os.path.join(NARRE_DIR, 'Movies_and_TV_5.json')
 # TP_file = os.path.join(NARRE_DIR, 'Kindle_Store_5.json')
+# TP_file = os.path.join(NARRE_DIR, 'Digital_Music_5.json')
 # TP_file = os.path.join(NARRE_DIR, 'Toys_and_Games_5.json')
+TP_file = os.path.join(NARRE_DIR, 'Industrial_and_Scientific_5.json')
+# TP_file = os.path.join(NARRE_DIR, 'Software_5.json')
+# TP_file = os.path.join(NARRE_DIR, 'Luxury_Beauty_5.json')
 embed_file = os.path.join(TPS_DIR, 'reviews_embeddings')
 embedding_size = 768
 
@@ -46,8 +50,8 @@ for line in f:
         continue
     try:
         reviews.append(str(js['reviewText']))
-        users_id.append(str(js['reviewerID']) + ',')
-        items_id.append(str(js['asin']) + ',')
+        users_id.append(str(js['reviewerID']))
+        items_id.append(str(js['asin']))
         ratings.append(str(js['overall']))
     except KeyError:
         null += 1
@@ -82,15 +86,22 @@ unique_uid = usercount.index
 unique_sid = itemcount.index
 user2id = dict((uid, i) for (i, uid) in enumerate(unique_uid))
 item2id = dict((sid, i) for (i, sid) in enumerate(unique_sid))
+id2reviewerID = dict((i, uid) for (i, uid) in enumerate(unique_uid))
+id2asin = dict((i, sid) for (i, sid) in enumerate(unique_sid))
 
-# user2id_json = json.dumps(user2id)
 # user2id_file = open('../data/%s/user2id.json' % dataset_name, 'w')
-# user2id_file.write(user2id_json)
+# user2id_file.write(json.dumps(user2id))
 # user2id_file.close()
-# item2id_json = json.dumps(item2id)
 # item2id_file = open('../data/%s/item2id.json' % dataset_name, 'w')
-# item2id_file.write(item2id_json)
+# item2id_file.write(json.dumps(item2id))
 # item2id_file.close()
+#
+# id2reviewerID_file = open('../data/%s/id2reviewerID.json' % dataset_name, 'w')
+# id2reviewerID_file.write(json.dumps(id2reviewerID))
+# id2reviewerID_file.close()
+# id2asin_file = open('../data/%s/id2asin.json' % dataset_name, 'w')
+# id2asin_file.write(json.dumps(id2asin))
+# id2asin_file.close()
 
 
 def numerize(tp):
@@ -103,6 +114,7 @@ data = numerize(data)
 tp_rating = data[['user_id', 'item_id', 'ratings']]
 
 n_ratings = tp_rating.shape[0]
+# random choice没有改变原本user id在亚马逊的编号和新生成的数字id的对应关系
 test = np.random.choice(n_ratings, size=int(0.20 * n_ratings), replace=False)
 test_idx = np.zeros(n_ratings, dtype=bool)
 test_idx[test] = True
@@ -151,16 +163,20 @@ for i in data.values:
 
 for i in data2.values:
     if i[0] in user_reviews:
-        pass
+        user_reviews[i[0]].append(i[3])
+        # pass
     else:
         user_rid[i[0]] = [0]
-        user_reviews[i[0]] = ['0']
+        user_reviews[i[0]] = [i[3]]
+        # user_reviews[i[0]] = ['0']
         user_reviews_embeddings[i[0]] = [np.ones(embedding_size)]
     if i[1] in item_reviews:
-        pass
+        item_reviews[i[1]].append(i[3])
+        # pass
     else:
         item_rid[i[1]] = [0]
-        item_reviews[i[1]] = ['0']
+        item_reviews[i[1]] = [i[3]]
+        # item_reviews[i[1]] = ['0']
         item_reviews_embeddings[i[1]] = [np.ones(embedding_size)]
 
 pickle.dump(user_reviews, open(os.path.join(TPS_DIR, 'user_review'), 'wb'))

@@ -15,10 +15,11 @@ import pandas as pd
 import numpy as np
 import dill as pickle
 
-dataset_name = "music"
+dataset_name = "industrial"
 TPS_DIR = '../data/%s' % dataset_name
 # TP_file = os.path.join(TPS_DIR, 'Musical_Instruments_5.json')
-TP_file = os.path.join(TPS_DIR, 'Digital_Music_5.json')
+# TP_file = os.path.join(TPS_DIR, 'Digital_Music_5.json')
+TP_file = os.path.join(TPS_DIR, 'Industrial_and_Scientific_5.json')
 
 f = open(TP_file)
 users_id = []
@@ -27,6 +28,9 @@ ratings = []
 reviews = []
 np.random.seed(2017)
 
+null = 0
+# 读取评分
+print("loading ratings...")
 for line in f:
     js = json.loads(line)
     if str(js['reviewerID']) == 'unknown':
@@ -35,10 +39,15 @@ for line in f:
     if str(js['asin']) == 'unknown':
         print("asin unknown")
         continue
-    reviews.append(str(js['reviewText']))
-    users_id.append(str(js['reviewerID']) + ',')
-    items_id.append(str(js['asin']) + ',')
-    ratings.append(str(js['overall']))
+    try:
+        reviews.append(str(js['reviewText']))
+        users_id.append(str(js['reviewerID']))
+        items_id.append(str(js['asin']))
+        ratings.append(str(js['overall']))
+    except KeyError:
+        null += 1
+print("num of reviews:", len(reviews))
+print("%s null reviews jumped. " % null)
 data = pd.DataFrame({'user_id': pd.Series(users_id),
                      'item_id': pd.Series(items_id),
                      'ratings': pd.Series(ratings),
@@ -119,12 +128,12 @@ for i in data.values:
 
 for i in data2.values:
     if i[0] in user_reviews:
-        continue
+        pass
     else:
         user_rid[i[0]] = [0]
         user_reviews[i[0]] = ['0']
     if i[1] in item_reviews:
-        continue
+        pass
     else:
         item_reviews[i[1]] = [0]
         item_rid[i[1]] = ['0']

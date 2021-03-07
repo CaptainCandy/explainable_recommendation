@@ -20,7 +20,7 @@ from tensorflow.python import debug as tf_debug
 from tqdm import tqdm
 
 
-dataset_name = "instruments"
+dataset_name = "software"
 tf.flags.DEFINE_string("valid_data", "../data/%s_bert/%s.test" % (dataset_name, dataset_name), " Data for validation")
 tf.flags.DEFINE_string("para_data", "../data/%s_bert/%s.para" % (dataset_name, dataset_name), "Data parameters")
 tf.flags.DEFINE_string("train_data", "../data/%s_bert/%s.train" % (dataset_name, dataset_name), "Data for training")
@@ -33,9 +33,9 @@ tf.flags.DEFINE_integer("embedding_dim", 768, "Dimensionality of character embed
 # tf.flags.DEFINE_string("filter_sizes", "3,4,5", "Comma-separated filter sizes ")
 # tf.flags.DEFINE_integer("num_filters", 100, "Number of filters per filter size")
 tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability")
-tf.flags.DEFINE_float("l2_reg_lambda", 0.001, "L2 regularizaion lambda")
+tf.flags.DEFINE_float("l2_reg_lambda", 0.1, "L2 regularizaion lambda")
 # Training parameters
-tf.flags.DEFINE_integer("batch_size", 16384, "Batch Size")
+tf.flags.DEFINE_integer("batch_size", 128, "Batch Size")
 tf.flags.DEFINE_integer("num_epochs", 100, "Number of training epochs")
 # Misc Parameters
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
@@ -214,7 +214,7 @@ if __name__ == '__main__':
                 # user_vocab_size=len(vocabulary_user),
                 # item_vocab_size=len(vocabulary_item),
                 embedding_size=FLAGS.embedding_dim,
-                embedding_id=32,
+                embedding_id=32,  # id的embedding size
                 l2_reg_lambda=FLAGS.l2_reg_lambda,
                 attention_size=32,
                 n_latent=32)
@@ -222,7 +222,7 @@ if __name__ == '__main__':
 
             global_step = tf.Variable(0, name="global_step", trainable=False)
 
-            optimizer = tf.train.AdamOptimizer(0.001, beta1=0.9, beta2=0.999,
+            optimizer = tf.train.AdamOptimizer(0.0001, beta1=0.9, beta2=0.999,
                                                epsilon=1e-8).minimize(deep.loss, global_step=global_step)
             # optimizer = tf.train.GradientDescentOptimizer(0.0001).minimize(deep.loss, global_step=global_step)
             # optimizer = tf.train.GradientDescentOptimizer(0.01)
@@ -356,8 +356,8 @@ if __name__ == '__main__':
                     #         best_mae = mae
                     #     print("")
 
-                print("epoch: " + str(epoch))
-                print("\nEvaluation:")
+                print("\nepoch: " + str(epoch))
+                print("Evaluation:")
                 print("train: rmse, mae:", train_rmse / ll, train_mae / ll)
                 rmse_train_listforplot.append(train_rmse / ll)
                 mae_train_listforplot.append(train_mae / ll)
@@ -378,7 +378,10 @@ if __name__ == '__main__':
                     end_index = min((batch_num + 1) * batch_size, data_size_test)
                     data_test = test_data[start_index:end_index]
 
-                    userid_valid, itemid_valid, reuid, reiid, y_valid = zip(*data_test)
+                    try:
+                        userid_valid, itemid_valid, reuid, reiid, y_valid = zip(*data_test)
+                    except ValueError:
+                        break
                     u_valid = []
                     i_valid = []
                     for i in range(len(userid_valid)):
@@ -402,14 +405,14 @@ if __name__ == '__main__':
                 mae_test_listforplot.append(mae)
                 if best_rmse > rmse:
                     best_rmse = rmse
-                    saver.save(sess, "./checkpoints/NARRE_%s_%s.ckpt" % (dataset_name, time_str),
+                    saver.save(sess, "./checkpoints/BARRE_%s_%s.ckpt" % (dataset_name, time_str),
                                global_step=global_step)
                 if best_mae > mae:
                     best_mae = mae
                 print("")
             print('best rmse:', best_rmse)
             print('best mae:', best_mae)
-            np.savez("./criterion_%s_%s.npz" % (dataset_name, time_str), rmse_train=rmse_train_listforplot, rmse_test=rmse_test_listforplot,
+            np.savez("./results/criterion_%s_%s.npz" % (dataset_name, time_str), rmse_train=rmse_train_listforplot, rmse_test=rmse_test_listforplot,
                      mae_train=mae_train_listforplot, mae_test=mae_test_listforplot)
             plot_train_process(rmse_train_listforplot, rmse_test_listforplot,
                                mae_train_listforplot, mae_test_listforplot)

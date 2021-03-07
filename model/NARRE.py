@@ -9,7 +9,7 @@ Chong Chen (cstchenc@163.com)
 Chong Chen, Min Zhang, Yiqun Liu, and Shaoping Ma. 2018. Neural Attentional Rating Regression with Review-level Explanations. In WWW'18.
 '''
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 
 class NARRE(object):
@@ -20,7 +20,7 @@ class NARRE(object):
         self.input_u = tf.placeholder(tf.int32, [None, review_num_u, review_len_u], name="input_u")
         self.input_i = tf.placeholder(tf.int32, [None, review_num_i, review_len_i], name="input_i")
         self.input_reuid = tf.placeholder(tf.int32, [None, review_num_u], name='input_reuid')
-        self.input_reiid = tf.placeholder(tf.int32, [None, review_num_i], name='input_reuid')
+        self.input_reiid = tf.placeholder(tf.int32, [None, review_num_i], name='input_reiid')
         self.input_y = tf.placeholder(tf.float32, [None, 1], name="input_y")
         self.input_uid = tf.placeholder(tf.int32, [None, 1], name="input_uid")
         self.input_iid = tf.placeholder(tf.int32, [None, 1], name="input_iid")

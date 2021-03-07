@@ -5,13 +5,16 @@ from tqdm import tqdm
 from transformers import AutoConfig
 from transformers import BertTokenizer, TFBertModel, BertConfig
 
-dataset_name = "music"
+dataset_name = "luxury"
 
 # f = open("../data/%s/Movies_and_TV_5.json" % dataset_name, "r")
 # f = open("../data/%s/Kindle_Store_5.json" % dataset_name, "r")
 # f = open("../data/%s/Toys_and_Games_5.json" % dataset_name, "r")
 # f = open("../data/%s/Musical_Instruments_5.json" % dataset_name, "r")
-f = open("../data/%s/Digital_Music_5.json" % dataset_name, "r")
+# f = open("../data/%s/Digital_Music_5.json" % dataset_name, "r")
+# f = open("../data/%s/Industrial_and_Scientific_5.json" % dataset_name, "r")
+# f = open("../data/%s/Software_5.json" % dataset_name, "r")
+f = open("../data/%s/Luxury_Beauty_5.json" % dataset_name, "r")
 f_w = open("../data/%s_bert/reviews_all" % dataset_name, "wb")
 
 count = 0
@@ -48,7 +51,7 @@ with open("../data/%s_bert/reviews_all" % dataset_name, "rb") as f:
     f.close()
 
 tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-model = TFBertModel.from_pretrained("bert-base-uncased", output_hidden_states = True) # 如果想要获取到各个隐层值需要如此设置
+model = TFBertModel.from_pretrained("bert-base-uncased", output_hidden_states=True)  # 如果想要获取到各个隐层值需要如此设置
 max_len = 512
 
 # Convert token to vocabulary indices
@@ -58,7 +61,7 @@ for r in tqdm(reviews_all, ncols=80):
     tokenized_string = tokenizer.tokenize(r)
     tokens_ids = tokenizer.convert_tokens_to_ids(tokenized_string)
     token.append(tokens_ids)
-# pickle.dump(token, open("../data/%s_bert/reviews_token" % dataset_name, "wb"))
+pickle.dump(token, open("../data/%s_bert/reviews_token" % dataset_name, "wb"), protocol=pickle.HIGHEST_PROTOCOL)
 # token = pickle.load(open("../data/%s_bert/reviews_token" % dataset_name, "rb"))
 
 print("extracting embeddings...")
@@ -66,7 +69,7 @@ print("extracting embeddings...")
 r_f = open("../data/%s_bert/reviews_embeddings" % dataset_name, "wb")
 num = len(token)
 # batch_size = 128是经过测试后选择的，最大利用GPU
-batch_size = 64
+batch_size = 32
 for i in tqdm(range(num//batch_size + 1), ncols=80):
     t_batch = token[batch_size*i:batch_size*i+batch_size]
     # padding tokens

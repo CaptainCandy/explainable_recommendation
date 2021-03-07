@@ -11,7 +11,7 @@ Chong Chen (cstchenc@163.com)
 
 import os
 import numpy as np
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import pickle
 import time
 import matplotlib.pyplot as plt
@@ -20,7 +20,7 @@ from tensorflow.python import debug as tf_debug
 from tqdm import tqdm
 
 
-dataset_name = "music"
+dataset_name = "industrial"
 tf.flags.DEFINE_string("word2vec", "../data/GoogleNews-vectors-negative300.txt",
                        "Word2vec file with pre-trained embeddings (default: None)")
 tf.flags.DEFINE_string("valid_data", "../data/%s/%s.test" % (dataset_name, dataset_name), " Data for validation")
@@ -31,13 +31,13 @@ tf.flags.DEFINE_string("train_data", "../data/%s/%s.train" % (dataset_name, data
 # Model Hyperparameters
 # tf.flags.DEFINE_string("word2vec", "./data/rt-polaritydata/google.bin", "Word2vec file with pre-trained embeddings (default: None)")
 tf.flags.DEFINE_integer("embedding_dim", 300, "Dimensionality of character embedding ")
-tf.flags.DEFINE_string("filter_sizes", "3,4,5", "Comma-separated filter sizes ")
+tf.flags.DEFINE_string("filter_sizes", "3", "Comma-separated filter sizes ")
 tf.flags.DEFINE_integer("num_filters", 100, "Number of filters per filter size")
 tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability ")
 tf.flags.DEFINE_float("l2_reg_lambda", 0.001, "L2 regularizaion lambda")
 # Training parameters
-tf.flags.DEFINE_integer("batch_size", 16, "Batch Size ")
-tf.flags.DEFINE_integer("num_epochs", 50, "Number of training epochs ")
+tf.flags.DEFINE_integer("batch_size", 16, "Batch Size")
+tf.flags.DEFINE_integer("num_epochs", 30, "Number of training epochs")
 # Misc Parameters
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
 tf.flags.DEFINE_boolean("log_device_placement", False, "Log placement of ops on devices")
@@ -393,7 +393,7 @@ if __name__ == '__main__':
                 print("")
             print('best rmse:', best_rmse)
             print('best mae:', best_mae)
-            np.savez("./criterion_%s_%s.npz" % (dataset_name, time_str), rmse_train=rmse_train_listforplot, rmse_test=rmse_test_listforplot,
+            np.savez("./results/criterion_%s_%s.npz" % (dataset_name, time_str), rmse_train=rmse_train_listforplot, rmse_test=rmse_test_listforplot,
                      mae_train=mae_train_listforplot, mae_test=mae_test_listforplot)
             plot_train_process(rmse_train_listforplot, rmse_test_listforplot,
                                mae_train_listforplot, mae_test_listforplot)

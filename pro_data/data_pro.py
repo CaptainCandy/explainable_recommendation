@@ -3,12 +3,12 @@ import re
 import itertools
 from collections import Counter
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import csv
 import dill as pickle
 import os
 
-dataset_name = "music"
+dataset_name = "industrial"
 tf.flags.DEFINE_string("valid_data", "../data/%s/%s_valid.csv" % (dataset_name, dataset_name), " Data for validation")
 tf.flags.DEFINE_string("test_data", "../data/%s/%s_test.csv" % (dataset_name, dataset_name), "Data for testing")
 tf.flags.DEFINE_string("train_data", "../data/%s/%s_train.csv" % (dataset_name, dataset_name), "Data for training")
@@ -234,7 +234,7 @@ def load_data_and_labels(train_data, valid_data, user_review, item_review, user_
             reid_user_train.append(u_rid[int(line[0])])
 
         if int(line[1]) in i_text:
-            reid_item_train.append(i_rid[int(line[1])])  #####write here
+            reid_item_train.append(i_rid[int(line[1])])
         else:
             i_text[int(line[1])] = []
             for s in item_reviews[int(line[1])]:
@@ -274,7 +274,6 @@ def load_data_and_labels(train_data, valid_data, user_review, item_review, user_
             reid_item_valid.append(i_rid[int(line[1])])
 
         y_valid.append(float(line[2]))
-    print("len")
 
     review_num_u = np.array([len(x) for x in u_text.values()])
     x = np.sort(review_num_u)
