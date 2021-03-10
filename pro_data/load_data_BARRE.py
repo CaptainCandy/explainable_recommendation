@@ -15,15 +15,15 @@ import pandas as pd
 import numpy as np
 import dill as pickle
 
-dataset_name = "industrial"
+dataset_name = "toys"
 NARRE_DIR = '../data/%s' % dataset_name
 TPS_DIR = '../data/%s_bert' % dataset_name
 # TP_file = os.path.join(NARRE_DIR, 'Musical_Instruments_5.json')
 # TP_file = os.path.join(NARRE_DIR, 'Movies_and_TV_5.json')
 # TP_file = os.path.join(NARRE_DIR, 'Kindle_Store_5.json')
 # TP_file = os.path.join(NARRE_DIR, 'Digital_Music_5.json')
-# TP_file = os.path.join(NARRE_DIR, 'Toys_and_Games_5.json')
-TP_file = os.path.join(NARRE_DIR, 'Industrial_and_Scientific_5.json')
+TP_file = os.path.join(NARRE_DIR, 'Toys_and_Games_5.json')
+# TP_file = os.path.join(NARRE_DIR, 'Industrial_and_Scientific_5.json')
 # TP_file = os.path.join(NARRE_DIR, 'Software_5.json')
 # TP_file = os.path.join(NARRE_DIR, 'Luxury_Beauty_5.json')
 embed_file = os.path.join(TPS_DIR, 'reviews_embeddings')
