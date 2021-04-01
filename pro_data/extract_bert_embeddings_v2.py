@@ -44,10 +44,6 @@ with open("../data/%s_bert/reviews_all" % dataset_name, "rb") as f:
             reviews_all.append(line)
         except EOFError:
             break
-    # for line in f:
-    #     # :-1是为了把最后的回车去掉
-    #     l = "[CLS]" + str(line[:-1]) + "[SEP]"
-    #     reviews_all.append(l)
     f.close()
 
 tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")

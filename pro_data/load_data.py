@@ -15,11 +15,12 @@ import pandas as pd
 import numpy as np
 import dill as pickle
 
-dataset_name = "industrial"
-TPS_DIR = '../data/%s' % dataset_name
+dataset_name = "toys"
+TPS_DIR = '../data2014/%s' % dataset_name
 # TP_file = os.path.join(TPS_DIR, 'Musical_Instruments_5.json')
 # TP_file = os.path.join(TPS_DIR, 'Digital_Music_5.json')
-TP_file = os.path.join(TPS_DIR, 'Industrial_and_Scientific_5.json')
+# TP_file = os.path.join(TPS_DIR, 'Industrial_and_Scientific_5.json')
+TP_file = os.path.join(TPS_DIR, 'Toys_and_Games_5.json')
 
 f = open(TP_file)
 users_id = []

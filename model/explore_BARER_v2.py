@@ -177,7 +177,7 @@ with tf.Session(config=session_conf) as sess:
     movie_asin = "6301773551"
     print("begin searching", movie_asin)
     f = open("../example/%s_%s.txt" % (dataset_name, movie_asin), "w")
-    count = 0
+    count = 0 # 为了让item的评论只写一次
     for test_id in tqdm(range(test_length), ncols=80):
         # print("test_id:", test_id)
         test_data_one = test_data[test_id:test_id + 1]

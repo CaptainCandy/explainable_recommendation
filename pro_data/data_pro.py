@@ -8,14 +8,14 @@ import csv
 import dill as pickle
 import os
 
-dataset_name = "industrial"
-tf.flags.DEFINE_string("valid_data", "../data/%s/%s_valid.csv" % (dataset_name, dataset_name), " Data for validation")
-tf.flags.DEFINE_string("test_data", "../data/%s/%s_test.csv" % (dataset_name, dataset_name), "Data for testing")
-tf.flags.DEFINE_string("train_data", "../data/%s/%s_train.csv" % (dataset_name, dataset_name), "Data for training")
-tf.flags.DEFINE_string("user_review", "../data/%s/user_review" % dataset_name, "User's reviews")
-tf.flags.DEFINE_string("item_review", "../data/%s/item_review" % dataset_name, "Item's reviews")
-tf.flags.DEFINE_string("user_review_id", "../data/%s/user_rid" % dataset_name, "user_review_id")
-tf.flags.DEFINE_string("item_review_id", "../data/%s/item_rid" % dataset_name, "item_review_id")
+dataset_name = "toys"
+tf.flags.DEFINE_string("valid_data", "../data2014/%s/%s_valid.csv" % (dataset_name, dataset_name), " Data for validation")
+tf.flags.DEFINE_string("test_data", "../data2014/%s/%s_test.csv" % (dataset_name, dataset_name), "Data for testing")
+tf.flags.DEFINE_string("train_data", "../data2014/%s/%s_train.csv" % (dataset_name, dataset_name), "Data for training")
+tf.flags.DEFINE_string("user_review", "../data2014/%s/user_review" % dataset_name, "User's reviews")
+tf.flags.DEFINE_string("item_review", "../data2014/%s/item_review" % dataset_name, "Item's reviews")
+tf.flags.DEFINE_string("user_review_id", "../data2014/%s/user_rid" % dataset_name, "user_review_id")
+tf.flags.DEFINE_string("item_review_id", "../data2014/%s/item_rid" % dataset_name, "item_review_id")
 tf.flags.DEFINE_string("stopwords", "../data/stopwords", "stopwords")
 
 
@@ -113,7 +113,7 @@ def build_vocab(sentences1, sentences2):
     vocabulary2 = {x: i for i, x in enumerate(vocabulary_inv2)}
     
     vocab_list1 = list(vocabulary1.keys())
-    vocab_file = open("../data/%s/vocabulary_all.txt" % dataset_name, "w")
+    vocab_file = open("../data2014/%s/vocabulary_all.txt" % dataset_name, "w")
     vocab_list2 = list(vocabulary2.keys())
     for word in vocab_list2:
         if word not in vocabulary1:
@@ -308,7 +308,7 @@ def load_data_and_labels(train_data, valid_data, user_review, item_review, user_
 
 
 if __name__ == '__main__':
-    TPS_DIR = '../data/%s' % dataset_name
+    TPS_DIR = '../data2014/%s' % dataset_name
     FLAGS = tf.flags.FLAGS
     FLAGS.flag_values_dict()
 

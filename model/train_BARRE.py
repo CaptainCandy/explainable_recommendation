@@ -1,5 +1,5 @@
 '''
-BARRE
+BARER
 @author:
 Xinze Tang
 
@@ -20,12 +20,12 @@ from tensorflow.python import debug as tf_debug
 from tqdm import tqdm
 
 
-dataset_name = "software"
-tf.flags.DEFINE_string("valid_data", "../data/%s_bert/%s.test" % (dataset_name, dataset_name), " Data for validation")
-tf.flags.DEFINE_string("para_data", "../data/%s_bert/%s.para" % (dataset_name, dataset_name), "Data parameters")
-tf.flags.DEFINE_string("train_data", "../data/%s_bert/%s.train" % (dataset_name, dataset_name), "Data for training")
-tf.flags.DEFINE_string("u_text_embeds_input", "../data/%s_bert/u_text_embeds_input.npy" % dataset_name, "User text embedding")
-tf.flags.DEFINE_string("i_text_embeds_input", "../data/%s_bert/i_text_embeds_input.npy" % dataset_name, "Item text embedding")
+dataset_name = "toys"
+tf.flags.DEFINE_string("valid_data", "../data2014/%s_bert/%s.test" % (dataset_name, dataset_name), " Data for validation")
+tf.flags.DEFINE_string("para_data", "../data2014/%s_bert/%s.para" % (dataset_name, dataset_name), "Data parameters")
+tf.flags.DEFINE_string("train_data", "../data2014/%s_bert/%s.train" % (dataset_name, dataset_name), "Data for training")
+tf.flags.DEFINE_string("u_text_embeds_input", "../data2014/%s_bert/u_text_embeds_input.npy" % dataset_name, "User text embedding")
+tf.flags.DEFINE_string("i_text_embeds_input", "../data2014/%s_bert/i_text_embeds_input.npy" % dataset_name, "Item text embedding")
 # ==================================================
 
 # Model Hyperparameters
@@ -33,13 +33,15 @@ tf.flags.DEFINE_integer("embedding_dim", 768, "Dimensionality of character embed
 # tf.flags.DEFINE_string("filter_sizes", "3,4,5", "Comma-separated filter sizes ")
 # tf.flags.DEFINE_integer("num_filters", 100, "Number of filters per filter size")
 tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability")
-tf.flags.DEFINE_float("l2_reg_lambda", 0.1, "L2 regularizaion lambda")
+tf.flags.DEFINE_float("l2_reg_lambda", 0.0001, "L2 regularizaion lambda")
 # Training parameters
 tf.flags.DEFINE_integer("batch_size", 128, "Batch Size")
-tf.flags.DEFINE_integer("num_epochs", 100, "Number of training epochs")
+tf.flags.DEFINE_integer("num_epochs", 50, "Number of training epochs")
 # Misc Parameters
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
 tf.flags.DEFINE_boolean("log_device_placement", False, "Log placement of ops on devices")
+learning_rate = 0.001
+n_factor = 32
 
 time_str = time.strftime("%Y-%m-%d_%Hh%Mm%Ss", time.localtime(time.time()))
 
@@ -214,15 +216,15 @@ if __name__ == '__main__':
                 # user_vocab_size=len(vocabulary_user),
                 # item_vocab_size=len(vocabulary_item),
                 embedding_size=FLAGS.embedding_dim,
-                embedding_id=32,  # id的embedding size
+                embedding_id=n_factor,  # id的embedding size
                 l2_reg_lambda=FLAGS.l2_reg_lambda,
                 attention_size=32,
-                n_latent=32)
+                n_latent=n_factor)
             tf.set_random_seed(random_seed)
 
             global_step = tf.Variable(0, name="global_step", trainable=False)
 
-            optimizer = tf.train.AdamOptimizer(0.0001, beta1=0.9, beta2=0.999,
+            optimizer = tf.train.AdamOptimizer(learning_rate, beta1=0.9, beta2=0.999,
                                                epsilon=1e-8).minimize(deep.loss, global_step=global_step)
             # optimizer = tf.train.GradientDescentOptimizer(0.0001).minimize(deep.loss, global_step=global_step)
             # optimizer = tf.train.GradientDescentOptimizer(0.01)

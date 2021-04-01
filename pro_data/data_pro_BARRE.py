@@ -9,7 +9,7 @@ import csv
 import dill as pickle
 import os
 
-dataset_name = "instruments"
+dataset_name = "music"
 embedding_size = 768
 tf.flags.DEFINE_string("valid_data", "../data/%s_bert/%s_valid.csv" % (dataset_name, dataset_name), " Data for validation")
 tf.flags.DEFINE_string("test_data", "../data/%s_bert/%s_test.csv" % (dataset_name, dataset_name), "Data for testing")
