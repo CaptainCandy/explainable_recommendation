@@ -13,27 +13,27 @@ from tqdm import tqdm
 
 dataset_name = "movies"
 
-# f = open("../data/%s/Movies_and_TV_5.json" % dataset_name, "r")
-# f_w = open("../data/%s_bert/reviews_all.txt" % dataset_name, "w")
-#
-# reviews_all = []
-# null = 0
-# for line in f:
-#     js = json.loads(line)
-#     if str(js['reviewerID']) == 'unknown':
-#         print("reviewerID unknown")
-#         continue
-#     if str(js['asin']) == 'unknown':
-#         print("asin unknown")
-#         continue
-#     try:
-#         f_w.write(js["reviewText"])
-#         f_w.write("\n")
-#     except KeyError:
-#         null += 1
-# f.close()
-# f_w.close()
-# print("reviews_all saved. %s null reviews jumped. " % null)
+f = open("../data/%s/Movies_and_TV_5.json" % dataset_name, "r")
+f_w = open("../data/%s_bert/reviews_all.txt" % dataset_name, "w")
+
+reviews_all = []
+null = 0
+for line in f:
+    js = json.loads(line)
+    if str(js['reviewerID']) == 'unknown':
+        print("reviewerID unknown")
+        continue
+    if str(js['asin']) == 'unknown':
+        print("asin unknown")
+        continue
+    try:
+        f_w.write(js["reviewText"])
+        f_w.write("\n")
+    except KeyError:
+        null += 1
+f.close()
+f_w.close()
+print("reviews_all saved. %s null reviews jumped. " % null)
 
 reviews_all = []
 reviews_embeddings = []

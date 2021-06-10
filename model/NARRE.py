@@ -78,9 +78,9 @@ class NARRE(object):
         num_filters_total = num_filters * len(filter_sizes)
         self.h_pool_u = tf.concat(pooled_outputs_u, 3)
         self.h_pool_flat_u = tf.reshape(self.h_pool_u, [-1, review_num_u, num_filters_total])
-        self.h_pool_flat_u = tf.clip_by_value(self.h_pool_flat_u, clip_value_min=0, clip_value_max=5, name="clip")
-        self.h_pool_flat_u = tf.Print(self.h_pool_flat_u, ["h_pool_flat_u after clipped: ", self.h_pool_flat_u,
-                                                           tf.shape(self.h_pool_flat_u)], summarize=50)
+        self.h_pool_flat_u = tf.clip_by_value(self.h_pool_flat_u, clip_value_min=0, clip_value_max=10, name="clip")
+        # self.h_pool_flat_u = tf.Print(self.h_pool_flat_u, ["h_pool_flat_u after clipped: ", self.h_pool_flat_u,
+        #                                                    tf.shape(self.h_pool_flat_u)], summarize=50)
 
         pooled_outputs_i = []
         for i, filter_size in enumerate(filter_sizes):
@@ -120,9 +120,9 @@ class NARRE(object):
         #                                                    tf.shape(self.h_pool_i)], summarize=50)
         # batch_size*32(k)*卷积后的特征个数
         self.h_pool_flat_i = tf.reshape(self.h_pool_i, [-1, review_num_i, num_filters_total])
-        self.h_pool_flat_i = tf.clip_by_value(self.h_pool_flat_i, clip_value_min=0, clip_value_max=5, name="clip")
-        self.h_pool_flat_i = tf.Print(self.h_pool_flat_i, ["h_pool_flat_i after clipped: ", self.h_pool_flat_i,
-                                                           tf.shape(self.h_pool_flat_i)], summarize=50)
+        self.h_pool_flat_i = tf.clip_by_value(self.h_pool_flat_i, clip_value_min=0, clip_value_max=10, name="clip")
+        # self.h_pool_flat_i = tf.Print(self.h_pool_flat_i, ["h_pool_flat_i after clipped: ", self.h_pool_flat_i,
+        #                                                    tf.shape(self.h_pool_flat_i)], summarize=50)
 
         with tf.name_scope("dropout"):
             self.h_drop_u = tf.nn.dropout(self.h_pool_flat_u, 1.0)
@@ -234,7 +234,9 @@ class NARRE(object):
             losses = tf.nn.l2_loss(tf.subtract(self.predictions, self.input_y))
 
             self.loss = losses + l2_reg_lambda * l2_loss_x
+            # self.loss = tf.Print(self.loss, ["loss: ", self.loss, tf.shape(self.loss)], summarize=50)
 
         with tf.name_scope("accuracy"):
             self.mae = tf.reduce_mean(tf.abs(tf.subtract(self.predictions, self.input_y)))
             self.accuracy = tf.sqrt(tf.reduce_mean(tf.square(tf.subtract(self.predictions, self.input_y))))
+            # self.accuracy = tf.Print(self.accuracy, ["accuracy: ", self.accuracy, tf.shape(self.accuracy)], summarize=50)

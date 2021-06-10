@@ -15,17 +15,18 @@ import pandas as pd
 import numpy as np
 import dill as pickle
 
-dataset_name = "toys"
-NARRE_DIR = '../data/%s' % dataset_name
-TPS_DIR = '../data/%s_bert' % dataset_name
+dataset_name = "movies"
+NARRE_DIR = '../data2014/%s' % dataset_name
+TPS_DIR = '../data2014/%s_bert' % dataset_name
 # TP_file = os.path.join(NARRE_DIR, 'Musical_Instruments_5.json')
-# TP_file = os.path.join(NARRE_DIR, 'Movies_and_TV_5.json')
+TP_file = os.path.join(NARRE_DIR, 'Movies_and_TV_5.json')
 # TP_file = os.path.join(NARRE_DIR, 'Kindle_Store_5.json')
 # TP_file = os.path.join(NARRE_DIR, 'Digital_Music_5.json')
-TP_file = os.path.join(NARRE_DIR, 'Toys_and_Games_5.json')
+# TP_file = os.path.join(NARRE_DIR, 'Toys_and_Games_5.json')
 # TP_file = os.path.join(NARRE_DIR, 'Industrial_and_Scientific_5.json')
 # TP_file = os.path.join(NARRE_DIR, 'Software_5.json')
 # TP_file = os.path.join(NARRE_DIR, 'Luxury_Beauty_5.json')
+# TP_file = os.path.join(NARRE_DIR, 'CDs_and_Vinyl_5.json')
 embed_file = os.path.join(TPS_DIR, 'reviews_embeddings')
 embedding_size = 768
 
@@ -89,19 +90,19 @@ item2id = dict((sid, i) for (i, sid) in enumerate(unique_sid))
 id2reviewerID = dict((i, uid) for (i, uid) in enumerate(unique_uid))
 id2asin = dict((i, sid) for (i, sid) in enumerate(unique_sid))
 
-# user2id_file = open('../data/%s/user2id.json' % dataset_name, 'w')
-# user2id_file.write(json.dumps(user2id))
-# user2id_file.close()
-# item2id_file = open('../data/%s/item2id.json' % dataset_name, 'w')
-# item2id_file.write(json.dumps(item2id))
-# item2id_file.close()
-#
-# id2reviewerID_file = open('../data/%s/id2reviewerID.json' % dataset_name, 'w')
-# id2reviewerID_file.write(json.dumps(id2reviewerID))
-# id2reviewerID_file.close()
-# id2asin_file = open('../data/%s/id2asin.json' % dataset_name, 'w')
-# id2asin_file.write(json.dumps(id2asin))
-# id2asin_file.close()
+user2id_file = open('../data2014/%s/user2id.json' % dataset_name, 'w')
+user2id_file.write(json.dumps(user2id))
+user2id_file.close()
+item2id_file = open('../data2014/%s/item2id.json' % dataset_name, 'w')
+item2id_file.write(json.dumps(item2id))
+item2id_file.close()
+
+id2reviewerID_file = open('../data2014/%s/id2reviewerID.json' % dataset_name, 'w')
+id2reviewerID_file.write(json.dumps(id2reviewerID))
+id2reviewerID_file.close()
+id2asin_file = open('../data2014/%s/id2asin.json' % dataset_name, 'w')
+id2asin_file.write(json.dumps(id2asin))
+id2asin_file.close()
 
 
 def numerize(tp):

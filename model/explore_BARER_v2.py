@@ -14,13 +14,13 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from tqdm import tqdm
 
 dataset_name = "movies"
-valid_data = "../data/%s_bert/%s.test" % (dataset_name, dataset_name)
-para_data = "../data/%s_bert/%s.para" % (dataset_name, dataset_name)
-train_data = "../data/%s_bert/%s.train" % (dataset_name, dataset_name)
-u_text_embeds_input = "../data/%s_bert/u_text_embeds_input.npy" % dataset_name
-i_text_embeds_input = "../data/%s_bert/i_text_embeds_input.npy" % dataset_name
-u_text_path = "../data/%s_bert/user_review" % dataset_name
-i_text_path = "../data/%s_bert/item_review" % dataset_name
+valid_data = "../data2014/%s_bert/%s.test" % (dataset_name, dataset_name)
+para_data = "../data2014/%s_bert/%s.para" % (dataset_name, dataset_name)
+train_data = "../data2014/%s_bert/%s.train" % (dataset_name, dataset_name)
+u_text_embeds_input = "../data2014/%s_bert/u_text_embeds_input.npy" % dataset_name
+i_text_embeds_input = "../data2014/%s_bert/i_text_embeds_input.npy" % dataset_name
+u_text_path = "../data2014/%s_bert/user_review" % dataset_name
+i_text_path = "../data2014/%s_bert/item_review" % dataset_name
 
 embedding_dim = 768
 dropout_keep_prob = 0.5
@@ -76,7 +76,7 @@ def make_wordcloud(s, test_id, reviewerID, asin, type, stop_words):
     w = wordcloud.WordCloud(width=800, height=400, background_color='white', stopwords=stop_words)
     try:
         w.generate(s)
-        w.to_file("../example/%s_%s_%s_%s_%s_%s.png" % (dataset_name, test_id, type, reviewerID, asin, time_str))
+        w.to_file("../example2014/%s_%s_%s_%s_%s_%s.png" % (dataset_name, test_id, type, reviewerID, asin, time_str))
     except ValueError:
         pass
 
@@ -97,7 +97,7 @@ def make_tfidf_wordcloud(top_reviews, corpus, test_id, reviewerID, asin, type, s
 
     w = wordcloud.WordCloud(width=800, height=400, background_color='white', stopwords=stop_words)
     w.generate_from_frequencies(word_fre)
-    w.to_file("../example/%s_%s_%s_%s_%s_%s.png" % (dataset_name, test_id, type, reviewerID, asin, time_str))
+    w.to_file("../example2014/%s_%s_%s_%s_%s_%s.png" % (dataset_name, test_id, type, reviewerID, asin, time_str))
 
 
 print("Loading trained model...")
@@ -117,14 +117,14 @@ i_text_embeds = dict(i_text_embeds.item())
 u_text = pickle.load(open(u_text_path, "rb"))
 i_text = pickle.load(open(i_text_path, "rb"))
 
-jsf = open('../data/%s/id2reviewerID.json' % dataset_name, 'r')
+jsf = open('../data2014/%s/id2reviewerID.json' % dataset_name, 'r')
 id2reviewerID = json.loads(jsf.readline())
-jsf = open('../data/%s/id2asin.json' % dataset_name, 'r')
+jsf = open('../data2014/%s/id2asin.json' % dataset_name, 'r')
 id2asin = json.loads(jsf.readline())
 
 # jsf = open('../data/All_Amazon_Meta.json', 'r')
 # jsf = open('../data/%s/meta_Digital_Music.json' % dataset_name, 'r')
-jsf = open('../data/%s/meta_Movies_and_TV.json' % dataset_name, 'r')
+jsf = open('../data2014/%s/meta_Movies_and_TV.json' % dataset_name, 'r')
 meta = {}
 for line in jsf:
     js = json.loads(line)
@@ -172,11 +172,12 @@ with tf.Session(config=session_conf) as sess:
 
     # saver = tf.train.import_meta_graph('./checkpoints/NARRE_instruments_2021-02-08_22h47m03s.ckpt-50102.meta')
     saver = tf.train.Saver()
-    saver.restore(sess, "../model/checkpoints/BARRE_movies_2021-03-05_20h01m43s.ckpt-1043798")
+    # saver.restore(sess, "../model/checkpoints/BARRE_movies_2021-03-05_20h01m43s.ckpt-1043798")
+    saver.restore(sess, "../model/checkpoints/BARRE_movies_2021-03-31_21h59m14s.ckpt-445578")
 
-    movie_asin = "6301773551"
+    movie_asin = "B00000K3AM"
     print("begin searching", movie_asin)
-    f = open("../example/%s_%s.txt" % (dataset_name, movie_asin), "w")
+    f = open("../example2014/%s_%s.txt" % (dataset_name, movie_asin), "w")
     count = 0 # 为了让item的评论只写一次
     for test_id in tqdm(range(test_length), ncols=80):
         # print("test_id:", test_id)
