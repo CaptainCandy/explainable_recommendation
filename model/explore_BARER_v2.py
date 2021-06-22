@@ -1,3 +1,6 @@
+'''
+主要是根据选定的电影，找到当前电影的所有历史评论，同时找到给当前电影评论的所有用户的历史购买记录，预测评分及历史评论，都放在一个txt文件里查看
+'''
 import tensorflow.compat.v1 as tf
 import numpy as np
 import dill as pickle
@@ -33,6 +36,9 @@ time_str = time.strftime("%Y-%m-%d_%Hh%Mm%Ss", time.localtime(time.time()))
 
 
 def print_items_meta(asins, meta):
+    '''
+    打印电影的基本信息
+    '''
     for asin in asins:
         try:
             info = meta[asin]
@@ -47,6 +53,9 @@ def print_items_meta(asins, meta):
 
 
 def write_items_meta(asins, meta, f):
+    '''
+    写入电影的基本信息
+    '''
     for asin in asins:
         try:
             info = meta[asin]
@@ -73,6 +82,9 @@ def write_items_meta(asins, meta, f):
 
 
 def make_wordcloud(s, test_id, reviewerID, asin, type, stop_words):
+    '''
+    做普通词云
+    '''
     w = wordcloud.WordCloud(width=800, height=400, background_color='white', stopwords=stop_words)
     try:
         w.generate(s)
@@ -82,6 +94,9 @@ def make_wordcloud(s, test_id, reviewerID, asin, type, stop_words):
 
 
 def make_tfidf_wordcloud(top_reviews, corpus, test_id, reviewerID, asin, type, stop_words):
+    '''
+    做利用tfidf作为词频的词云
+    '''
     tfidf = TfidfVectorizer(max_features=500, stop_words=stop_words)  # 默认值
     tfidf.fit(corpus)
     wordlist = tfidf.get_feature_names()
@@ -117,6 +132,7 @@ i_text_embeds = dict(i_text_embeds.item())
 u_text = pickle.load(open(u_text_path, "rb"))
 i_text = pickle.load(open(i_text_path, "rb"))
 
+# 算法里的数字编码转换为亚马逊原始数据中的ID
 jsf = open('../data2014/%s/id2reviewerID.json' % dataset_name, 'r')
 id2reviewerID = json.loads(jsf.readline())
 jsf = open('../data2014/%s/id2asin.json' % dataset_name, 'r')
