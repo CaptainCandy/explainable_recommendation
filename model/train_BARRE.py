@@ -20,6 +20,7 @@ from tensorflow.python import debug as tf_debug
 from tqdm import tqdm
 
 
+# 确定选择哪个亚马逊数据集，名字和文件夹名保持一致
 dataset_name = "cd"
 tf.flags.DEFINE_string("valid_data", "../data2014/%s_bert/%s.test" % (dataset_name, dataset_name), " Data for validation")
 tf.flags.DEFINE_string("para_data", "../data2014/%s_bert/%s.para" % (dataset_name, dataset_name), "Data parameters")
@@ -30,8 +31,6 @@ tf.flags.DEFINE_string("i_text_embeds_input", "../data2014/%s_bert/i_text_embeds
 
 # Model Hyperparameters
 tf.flags.DEFINE_integer("embedding_dim", 768, "Dimensionality of character embedding")
-# tf.flags.DEFINE_string("filter_sizes", "3,4,5", "Comma-separated filter sizes ")
-# tf.flags.DEFINE_integer("num_filters", 100, "Number of filters per filter size")
 tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability")
 tf.flags.DEFINE_float("l2_reg_lambda", 0.1, "L2 regularizaion lambda")
 # Training parameters
@@ -49,6 +48,7 @@ time_str = time.strftime("%Y-%m-%d_%Hh%Mm%Ss", time.localtime(time.time()))
 def train_step(u_batch, i_batch, uid, iid, reuid, reiid, y_batch, batch_num):
     """
     A single training step
+    训练一步
     """
     # print("u_batch: ", np.any(np.isnan(u_batch)))
     # print("i_batch: ", np.any(np.isnan(i_batch)))
@@ -77,7 +77,7 @@ def train_step(u_batch, i_batch, uid, iid, reuid, reiid, y_batch, batch_num):
 def dev_step(u_batch, i_batch, uid, iid, reuid, reiid, y_batch, writer=None):
     """
     Evaluates model on a dev set
-
+    推理一步
     """
     feed_dict = {
         deep.input_u: u_batch,
@@ -97,49 +97,8 @@ def dev_step(u_batch, i_batch, uid, iid, reuid, reiid, y_batch, writer=None):
     return [loss, accuracy, mae]
 
 
-# def load_word2vec_embedding(vocab_size, embedding_size, vocabulary, type):
-#     """
-#
-#     Args:
-#         vocab_size:
-#         embedding_size:
-#         vocabulary: vocabulary_user or vocabulary_item
-#         type: "user" or "item"
-#
-#     Returns:
-#         initW
-#     """
-#     # print("./%s_initW_%s.npy" % (type, dataset_name))
-#     if os.path.exists("./%s_initW_%s.npy" % (type, dataset_name)):
-#         initW = np.load("./%s_initW_%s.npy" % (type, dataset_name))
-#         return initW
-#
-#     initW = np.random.uniform(-1.0, 1.0, (vocab_size, embedding_size))
-#     # load any vectors from the word2vec
-#     print("\nLoad word2vec i file {}\n".format(FLAGS.word2vec))
-#     with open(FLAGS.word2vec, "r", encoding="utf-8") as f:
-#         header = f.readline()
-#         vocab_size_google, layer1_size = map(int, header.split())
-#         # binary_len = np.dtype('float32').itemsize * layer1_size
-#         for line in tqdm(range(vocab_size_google), ncols=80):
-#             word = []
-#             while True:
-#                 ch = f.read(1)
-#                 if ch == ' ':
-#                     word = ''.join(word)
-#                     break
-#                 word.append(ch)
-#             if word in vocabulary:
-#                 idx = vocabulary[word]
-#                 initW[idx] = np.fromstring(f.readline(), dtype='float32', count=FLAGS.embedding_dim)
-#             else:
-#                 f.readline()
-#     np.save("./%s_initW_%s.npy" % (type, dataset_name), initW)
-#     return initW
-
-
 def plot_train_process(rmse_train, rmse_test, mae_train, mae_test):
-    # 绘制曲线
+    # 绘制mae rmse曲线
     plt.figure(figsize=(15, 6))
     plt.subplot(121)
     plt.plot(rmse_train)
@@ -166,6 +125,7 @@ if __name__ == '__main__':
     print("Loading data...")
     t0 = time.time()
     para = pickle.load(open(FLAGS.para_data, 'rb'))
+    # 由BERT抽取之后的embedding，用作输入
     u_text_embeds = np.load(FLAGS.u_text_embeds_input, allow_pickle=True)
     i_text_embeds = np.load(FLAGS.i_text_embeds_input, allow_pickle=True)
     u_text_embeds = dict(u_text_embeds.item())
@@ -175,16 +135,11 @@ if __name__ == '__main__':
     item_num = para['item_num']
     review_num_u = para['review_num_u']
     review_num_i = para['review_num_i']
-    # vocabulary_user = para['user_vocab']
-    # vocabulary_item = para['item_vocab']
     train_length = para['train_length']
     test_length = para['test_length']
-    # u_text = para['u_text']
-    # i_text = para['i_text']
-    # u_text_embeds = para['u_text_embeds']
-    # i_text_embeds = para['i_text_embeds']
 
     random_seed = 2021
+    # 检查数据集参数
     print("user_num", user_num)
     print("item_num", item_num)
     print("user_num_real", len(u_text_embeds))
@@ -207,14 +162,13 @@ if __name__ == '__main__':
         # sess = tf_debug.LocalCLIDebugWrapperSession(sess)
         # sess.add_tensor_filter("has_inf_or_nan", tf_debug.has_inf_or_nan) # run -f has_inf_or_nan
         with sess.as_default():
+            # 初始化模型
             deep = BARRE.BARRE(
                 review_num_u=review_num_u,
                 review_num_i=review_num_i,
                 user_num=user_num,
                 item_num=item_num,
                 num_classes=1,
-                # user_vocab_size=len(vocabulary_user),
-                # item_vocab_size=len(vocabulary_item),
                 embedding_size=FLAGS.embedding_dim,
                 embedding_id=n_factor,  # id的embedding size
                 l2_reg_lambda=FLAGS.l2_reg_lambda,
@@ -223,7 +177,8 @@ if __name__ == '__main__':
             tf.set_random_seed(random_seed)
 
             global_step = tf.Variable(0, name="global_step", trainable=False)
-
+            
+            # 定义优化器
             optimizer = tf.train.AdamOptimizer(learning_rate, beta1=0.9, beta2=0.999,
                                                epsilon=1e-8).minimize(deep.loss, global_step=global_step)
             # optimizer = tf.train.GradientDescentOptimizer(0.0001).minimize(deep.loss, global_step=global_step)
@@ -239,15 +194,6 @@ if __name__ == '__main__':
             sess.run(tf.initialize_all_variables())
 
             saver = tf.train.Saver()
-
-            # if FLAGS.word2vec:
-            #     # initial matrix with random uniform
-            #
-            #     initW = load_word2vec_embedding(len(vocabulary_user), FLAGS.embedding_dim, vocabulary_user, "user")
-            #     sess.run(deep.W1.assign(initW))
-            #
-            #     initW = load_word2vec_embedding(len(vocabulary_item), FLAGS.embedding_dim, vocabulary_item, "item")
-            #     sess.run(deep.W2.assign(initW))
 
             best_mae = 10
             best_rmse = 10
@@ -276,7 +222,6 @@ if __name__ == '__main__':
             rmse_test_listforplot = []
             mae_test_listforplot = []
 
-
             saver = tf.train.Saver(max_to_keep=1)
 
             for epoch in tqdm(range(FLAGS.num_epochs), ncols=80):
@@ -288,10 +233,10 @@ if __name__ == '__main__':
                 # print("t2-t1:%.2f" % (t2 - t1))
                 # for batch_num in tqdm(range(ll), ncols=10):
                 for batch_num in range(ll):
+                    # 读取一个batch的训练数据
                     start_index = batch_num * batch_size
                     end_index = min((batch_num + 1) * batch_size, data_size_train)
                     data_train = shuffled_data[start_index:end_index]
-
                     uid, iid, reuid, reiid, y_batch = zip(*data_train)
                     # t4 = time.time()
                     # u_batch = np.zeros([batch_size, review_num_u, FLAGS.embedding_dim])
@@ -316,47 +261,6 @@ if __name__ == '__main__':
                     current_step = tf.train.global_step(sess, global_step)
                     train_rmse += t_rmse
                     train_mae += t_mae
-
-                    # Evaluate without an epoch
-                    # if batch_num % 900 == 0 and batch_num > 1:
-                    #     print("\nEvaluation:")
-                    #     print(batch_num)
-                    #
-                    #     loss_s = 0
-                    #     accuracy_s = 0
-                    #     mae_s = 0
-                    #
-                    #     ll_test = int(len(test_data) / batch_size) + 1
-                    #     for batch_num in range(ll_test):
-                    #         start_index = batch_num * batch_size
-                    #         end_index = min((batch_num + 1) * batch_size, data_size_test)
-                    #         data_test = test_data[start_index:end_index]
-                    #
-                    #         userid_valid, itemid_valid, reuid, reiid, y_valid = zip(*data_test)
-                    #         u_valid = []
-                    #         i_valid = []
-                    #         for i in range(len(userid_valid)):
-                    #             u_valid.append(u_text[userid_valid[i][0]])
-                    #             i_valid.append(i_text[itemid_valid[i][0]])
-                    #         u_valid = np.array(u_valid)
-                    #         i_valid = np.array(i_valid)
-                    #
-                    #         loss, accuracy, mae = dev_step(u_valid, i_valid, userid_valid, itemid_valid, reuid, reiid,
-                    #                                        y_valid)
-                    #         loss_s = loss_s + len(u_valid) * loss
-                    #         accuracy_s = accuracy_s + len(u_valid) * np.square(accuracy)
-                    #         mae_s = mae_s + len(u_valid) * mae
-                    #
-                    #     rmse = np.sqrt(accuracy_s / test_length)
-                    #     mae = mae_s / test_length
-                    #     print("loss_valid {:.4f}, rmse_valid {:.4f}, mae_valid {:.4f}".format(loss_s / test_length,
-                    #                                                                           rmse,
-                    #                                                                           mae))
-                    #     if best_rmse > rmse:
-                    #         best_rmse = rmse
-                    #     if best_mae > mae:
-                    #         best_mae = mae
-                    #     print("")
 
                 print("\nepoch: " + str(epoch))
                 print("Evaluation:")
@@ -407,6 +311,7 @@ if __name__ == '__main__':
                 mae_test_listforplot.append(mae)
                 if best_rmse > rmse:
                     best_rmse = rmse
+                    # 把最好的模型存下来
                     saver.save(sess, "./checkpoints/BARRE_%s_%s.ckpt" % (dataset_name, time_str),
                                global_step=global_step)
                 if best_mae > mae:
@@ -414,8 +319,8 @@ if __name__ == '__main__':
                 print("")
             print('best rmse:', best_rmse)
             print('best mae:', best_mae)
+            # 把训练记录存下来
             np.savez("./results/criterion_%s_%s.npz" % (dataset_name, time_str), rmse_train=rmse_train_listforplot, rmse_test=rmse_test_listforplot,
                      mae_train=mae_train_listforplot, mae_test=mae_test_listforplot)
             plot_train_process(rmse_train_listforplot, rmse_test_listforplot,
                                mae_train_listforplot, mae_test_listforplot)
-            # deep.save('./checkpoints/NARRE_%s_%s' % (dataset_name, time_str))
