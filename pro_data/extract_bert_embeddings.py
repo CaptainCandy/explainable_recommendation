@@ -1,4 +1,5 @@
 # coding=utf-8
+# 这个文件使用tensorflow v1的版本和一个bert_utils库写的，但是现在已经更新v2了，v1的contrib包都不支持了，而且v1的版本不支持实验室的3090显卡，所以虽然v1跑得更快但还是只能弃用
 
 import sys
 # sys.path.append('C:\\Users\\ZJUSO\\Documents\\CaptainCandy\\bert-utils')
