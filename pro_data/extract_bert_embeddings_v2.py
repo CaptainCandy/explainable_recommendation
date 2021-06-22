@@ -1,3 +1,6 @@
+'''
+这个文件是在训练模型之间先利用BERT把评论文本的特征给抽取出来，这边使用了transformers开源库写的bert模型，因为官方版本只支持v1
+'''
 import tensorflow as tf
 import dill as pickle
 import json
@@ -47,7 +50,9 @@ with open("../data2014/%s_bert/reviews_all" % dataset_name, "rb") as f:
             break
     f.close()
 
+# 定义切词器
 tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+# 初始化BERT模型
 model = TFBertModel.from_pretrained("bert-base-uncased", output_hidden_states=True)  # 如果想要获取到各个隐层值需要如此设置
 max_len = 512
 
@@ -58,6 +63,7 @@ for r in tqdm(reviews_all, ncols=80):
     tokenized_string = tokenizer.tokenize(r)
     tokens_ids = tokenizer.convert_tokens_to_ids(tokenized_string)
     token.append(tokens_ids)
+# 存一下token可以在哪里出错的时候不用再转换一遍
 pickle.dump(token, open("../data2014/%s_bert/reviews_token" % dataset_name, "wb"), protocol=pickle.HIGHEST_PROTOCOL)
 # token = pickle.load(open("../data2014/%s_bert/reviews_token" % dataset_name, "rb"))
 
@@ -78,7 +84,7 @@ for i in tqdm(range(num//batch_size + 1), ncols=80):
             for j in range(max_len - seq_len):
                 t.append(0)
     out = model(tf.convert_to_tensor(t_batch), training=False)
-    # 2代表hidden_states, -2代表倒数第二层
+    # 2代表hidden_states, -2代表倒数第二层，经过一个腾讯大佬的测试-2层的表示效果要比-1层好
     second_last_layer = out[2][-2]
     for j in range(len(second_last_layer)):
         token_vecs = second_last_layer[j]
