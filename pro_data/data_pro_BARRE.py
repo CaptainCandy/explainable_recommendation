@@ -1,3 +1,6 @@
+'''
+这个文件主要是把之前加载好的数据进行预处理，包括把所有数据补齐或切断成同样的形状shape。后面很多的数据用了np去存储而不是自带的pickle是因为np速度快而且数据占用空间小
+'''
 import numpy as np
 import re
 import itertools
@@ -21,57 +24,6 @@ tf.flags.DEFINE_string("item_review_embeds", "../data2014/%s_bert/item_reviews_e
 tf.flags.DEFINE_string("user_review_id", "../data2014/%s_bert/user_rid" % dataset_name, "user_review_id")
 tf.flags.DEFINE_string("item_review_id", "../data2014/%s_bert/item_rid" % dataset_name, "item_review_id")
 tf.flags.DEFINE_string("stopwords", "../data/stopwords", "stopwords")
-
-
-# def clean_str(string):
-#     """
-#     Tokenization/string cleaning for all datasets except for SST.
-#     Original taken from https://github.com/yoonkim/CNN_sentence/blob/master/process_data.py
-#     """
-#     string = re.sub(r"[^A-Za-z]", " ", string)
-#     string = re.sub(r"\'s", " \'s", string)
-#     string = re.sub(r"\'ve", " \'ve", string)
-#     string = re.sub(r"n\'t", " n\'t", string)
-#     string = re.sub(r"\'re", " \'re", string)
-#     string = re.sub(r"\'d", " \'d", string)
-#     string = re.sub(r"\'ll", " \'ll", string)
-#     string = re.sub(r",", " , ", string)
-#     string = re.sub(r"!", " ! ", string)
-#     string = re.sub(r"\(", " \( ", string)
-#     string = re.sub(r"\)", " \) ", string)
-#     string = re.sub(r"\?", " \? ", string)
-#     string = re.sub(r"\s{2,}", " ", string)
-#     return string.strip().lower()
-
-
-# def pad_sentences(u_text, u_len, u2_len, padding_word="<PAD/>"):
-#     """
-#     Pads all sentences to the same length. The length is defined by the longest sentence.
-#     Returns padded sentences.
-#     """
-#     review_num = u_len
-#     review_len = u2_len
-#
-#     u_text2 = {}
-#     for i in u_text.keys():
-#         u_reviews = u_text[i]
-#         padded_u_train = []
-#         for ri in range(review_num):
-#             if ri < len(u_reviews):
-#                 sentence = u_reviews[ri]
-#                 if review_len > len(sentence):
-#                     num_padding = review_len - len(sentence)
-#                     new_sentence = sentence + [padding_word] * num_padding
-#                     padded_u_train.append(new_sentence)
-#                 else:
-#                     new_sentence = sentence[:review_len]
-#                     padded_u_train.append(new_sentence)
-#             else:
-#                 new_sentence = [padding_word] * review_len
-#                 padded_u_train.append(new_sentence)
-#         u_text2[i] = padded_u_train
-#
-#     return u_text2
 
 
 def pad_reviewid(u_train, u_valid, u_len, num):
@@ -130,41 +82,6 @@ def pad_embeddings(u_text_embeds, i_text_embeds, u_len, i_len):
     return u_text_embeds2, i_text_embeds2
 
 
-# def build_vocab(sentences1, sentences2):
-#     """
-#     Builds a vocabulary mapping from word to index based on the sentences.
-#     Returns vocabulary mapping and inverse vocabulary mapping.
-#     """
-#     # Build vocabulary
-#     word_counts1 = Counter(itertools.chain(*sentences1))
-#     # Mapping from index to word
-#     vocabulary_inv1 = [x[0] for x in word_counts1.most_common()]
-#     vocabulary_inv1 = list(sorted(vocabulary_inv1))
-#     # Mapping from word to index
-#     vocabulary1 = {x: i for i, x in enumerate(vocabulary_inv1)}
-#
-#     word_counts2 = Counter(itertools.chain(*sentences2))
-#     # Mapping from index to word
-#     vocabulary_inv2 = [x[0] for x in word_counts2.most_common()]
-#     vocabulary_inv2 = list(sorted(vocabulary_inv2))
-#     # Mapping from word to index
-#     vocabulary2 = {x: i for i, x in enumerate(vocabulary_inv2)}
-#
-#     vocab_list1 = list(vocabulary1.keys())
-#     vocab_file = open("../data2014/%s/vocabulary_all.txt" % dataset_name, "w")
-#     vocab_list2 = list(vocabulary2.keys())
-#     for word in vocab_list2:
-#         if word not in vocabulary1:
-#             vocab_list1.append(word)
-#     for word in vocab_list1:
-#         vocab_file.write(word)
-#         vocab_file.write('\n')
-#     vocab_file.close()
-#     print("len of vocabulary_all: ", len(vocab_list1))
-#
-#     return [vocabulary1, vocabulary_inv1, vocabulary2, vocabulary_inv2]
-
-
 def build_input_data(u_text, i_text, vocabulary_u, vocabulary_i):
     """
     Maps sentences and labels to vectors based on a vocabulary.
@@ -208,13 +125,6 @@ def load_data(train_data, valid_data, user_review, item_review, user_rid, item_r
     reid_item_train, reid_item_valid = pad_reviewid(reid_item_train, reid_item_valid, i_len, user_num + 1)
     print("pad item done")
 
-    # user_voc = [xx for x in u_text.values() for xx in x]
-    # item_voc = [xx for x in i_text.values() for xx in x]
-
-    # vocabulary_user, vocabulary_inv_user, vocabulary_item, vocabulary_inv_item = build_vocab(user_voc, item_voc)
-    # print("len of vocabulary_user %s." % len(vocabulary_user))
-    # print("len of vocabulary_item %s." % len(vocabulary_item))
-    # u_text, i_text = build_input_data(u_text, i_text, vocabulary_user, vocabulary_item)
     y_train = np.array(y_train)
     y_valid = np.array(y_valid)
     uid_train = np.array(uid_train)
@@ -320,11 +230,6 @@ def load_data_and_labels(train_data, valid_data, user_review, item_review, user_
         if int(line[0]) in u_text_embeds:
             reid_user_valid.append(u_rid[int(line[0])])
         else:
-            # bert vocab的第一个
-            # u_text[int(line[0])] = [["[PAD]"]]
-            # u_text[int(line[0])] = []
-            # for s in user_reviews[int(line[0])]:
-            #     u_text[int(line[0])].append(s)
             # 全1的向量不影响计算
             u_text_embeds[int(line[0])] = user_review_embeds[int(line[0])]
             u_rid[int(line[0])] = user_rids[int(line[0])]
@@ -373,7 +278,8 @@ if __name__ == '__main__':
     TPS_DIR = '../data2014/%s_bert' % dataset_name
     FLAGS = tf.flags.FLAGS
     FLAGS.flag_values_dict()
-
+    
+    # 加载数据，统一形状
     y_train, y_valid, uid_train, iid_train, uid_valid, iid_valid, u_len, i_len, user_num, item_num, reid_user_train, \
     reid_item_train, reid_user_valid, reid_item_valid, u_text_embeds, i_text_embeds = \
         load_data(FLAGS.train_data, FLAGS.valid_data, FLAGS.user_review, FLAGS.item_review, FLAGS.user_review_id,
@@ -424,12 +330,3 @@ if __name__ == '__main__':
     # pickle.dump(i_text_embeds, open(os.path.join(TPS_DIR, 'i_text_embeds_input'), 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
     np.save(os.path.join(TPS_DIR, 'u_text_embeds_input.npy'), u_text_embeds, allow_pickle=True)
     np.save(os.path.join(TPS_DIR, 'i_text_embeds_input.npy'), i_text_embeds, allow_pickle=True)
-    # para['u_text_embeds'] = u_text_embeds
-    # para['i_text_embeds'] = i_text_embeds
-
-
-    # vocab_inv = {}
-    # vocab_inv['user'] = vocabulary_inv_user
-    # vocab_inv['item'] = vocabulary_inv_item
-    # output = open(os.path.join(TPS_DIR, ('%s.vocab' % dataset_name)), 'wb')
-    # pickle.dump(vocab_inv, output)
