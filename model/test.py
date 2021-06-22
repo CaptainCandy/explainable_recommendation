@@ -40,10 +40,10 @@ def clean_str(string):
     return string.strip().lower()
 
 
-dataset_name = "music"
+dataset_name = "movies"
 # reviews_all = []
 reviews_all_len = []
-with open("../data/%s_bert/reviews_all" % dataset_name, "rb") as f:
+with open("../data2014/%s_bert/reviews_all" % dataset_name, "rb") as f:
     while True:
         try:
             line = pickle.load(f)
@@ -57,7 +57,7 @@ r = pd.Series(reviews_all_len)
 print(r.describe())
 
 count = 0
-with open("../data/%s/vocabulary_all.txt" % dataset_name, "r") as f:
+with open("../data2014/%s/vocabulary_all.txt" % dataset_name, "r") as f:
     for line in f:
         count += 1
 print(count)

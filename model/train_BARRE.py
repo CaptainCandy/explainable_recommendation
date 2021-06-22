@@ -1,5 +1,5 @@
 '''
-BARER
+BARRE
 @author:
 Xinze Tang
 
@@ -20,7 +20,7 @@ from tensorflow.python import debug as tf_debug
 from tqdm import tqdm
 
 
-dataset_name = "toys"
+dataset_name = "cd"
 tf.flags.DEFINE_string("valid_data", "../data2014/%s_bert/%s.test" % (dataset_name, dataset_name), " Data for validation")
 tf.flags.DEFINE_string("para_data", "../data2014/%s_bert/%s.para" % (dataset_name, dataset_name), "Data parameters")
 tf.flags.DEFINE_string("train_data", "../data2014/%s_bert/%s.train" % (dataset_name, dataset_name), "Data for training")
@@ -33,14 +33,14 @@ tf.flags.DEFINE_integer("embedding_dim", 768, "Dimensionality of character embed
 # tf.flags.DEFINE_string("filter_sizes", "3,4,5", "Comma-separated filter sizes ")
 # tf.flags.DEFINE_integer("num_filters", 100, "Number of filters per filter size")
 tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability")
-tf.flags.DEFINE_float("l2_reg_lambda", 0.0001, "L2 regularizaion lambda")
+tf.flags.DEFINE_float("l2_reg_lambda", 0.1, "L2 regularizaion lambda")
 # Training parameters
 tf.flags.DEFINE_integer("batch_size", 128, "Batch Size")
 tf.flags.DEFINE_integer("num_epochs", 50, "Number of training epochs")
 # Misc Parameters
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
 tf.flags.DEFINE_boolean("log_device_placement", False, "Log placement of ops on devices")
-learning_rate = 0.001
+learning_rate = 0.0001
 n_factor = 32
 
 time_str = time.strftime("%Y-%m-%d_%Hh%Mm%Ss", time.localtime(time.time()))

@@ -36,12 +36,13 @@ tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability")
 tf.flags.DEFINE_float("l2_reg_lambda", 0.1, "L2 regularizaion lambda")
 # Training parameters
 tf.flags.DEFINE_integer("batch_size", 128, "Batch Size")
-tf.flags.DEFINE_integer("num_epochs", 50, "Number of training epochs")
+tf.flags.DEFINE_integer("num_epochs", 30, "Number of training epochs")
 # Misc Parameters
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
 tf.flags.DEFINE_boolean("log_device_placement", False, "Log placement of ops on devices")
-learning_rate = 0.0005
-n_factor = 32
+learning_rate = 0.0001
+n_factor = 16
+attention_size = 16
 
 time_str = time.strftime("%Y-%m-%d_%Hh%Mm%Ss", time.localtime(time.time()))
 
@@ -177,7 +178,7 @@ if __name__ == '__main__':
                 embedding_size=FLAGS.embedding_dim,
                 embedding_id=n_factor,  # id的embedding size
                 l2_reg_lambda=FLAGS.l2_reg_lambda,
-                attention_size=32,
+                attention_size=attention_size,
                 n_latent=n_factor)
             tf.set_random_seed(random_seed)
 

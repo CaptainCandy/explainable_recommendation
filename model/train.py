@@ -20,7 +20,7 @@ from tensorflow.python import debug as tf_debug
 from tqdm import tqdm
 
 
-dataset_name = "toys"
+dataset_name = "movies"
 tf.flags.DEFINE_string("word2vec", "../data/GoogleNews-vectors-negative300.txt",
                        "Word2vec file with pre-trained embeddings (default: None)")
 tf.flags.DEFINE_string("valid_data", "../data2014/%s/%s.test" % (dataset_name, dataset_name), " Data for validation")
@@ -36,8 +36,8 @@ tf.flags.DEFINE_integer("num_filters", 100, "Number of filters per filter size")
 tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability ")
 tf.flags.DEFINE_float("l2_reg_lambda", 0.001, "L2 regularizaion lambda")
 # Training parameters
-tf.flags.DEFINE_integer("batch_size", 16, "Batch Size")
-tf.flags.DEFINE_integer("num_epochs", 30, "Number of training epochs")
+tf.flags.DEFINE_integer("batch_size", 128, "Batch Size")
+tf.flags.DEFINE_integer("num_epochs", 50, "Number of training epochs")
 # Misc Parameters
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
 tf.flags.DEFINE_boolean("log_device_placement", False, "Log placement of ops on devices")
@@ -111,8 +111,8 @@ def load_word2vec_embedding(vocab_size, embedding_size, vocabulary, type):
         initW
     """
     # print("./%s_initW_%s.npy" % (type, dataset_name))
-    if os.path.exists("./%s_initW_%s.npy" % (type, dataset_name)):
-        initW = np.load("./%s_initW_%s.npy" % (type, dataset_name))
+    if os.path.exists("./%s_initW_%s_2014.npy" % (type, dataset_name)):
+        initW = np.load("./%s_initW_%s_2014.npy" % (type, dataset_name))
         return initW
 
     initW = np.random.uniform(-1.0, 1.0, (vocab_size, embedding_size))
@@ -135,7 +135,7 @@ def load_word2vec_embedding(vocab_size, embedding_size, vocabulary, type):
                 initW[idx] = np.fromstring(f.readline(), dtype='float32', count=FLAGS.embedding_dim)
             else:
                 f.readline()
-    np.save("./%s_initW_%s.npy" % (type, dataset_name), initW)
+    np.save("./%s_initW_%s_2014.npy" % (type, dataset_name), initW)
     return initW
 
 

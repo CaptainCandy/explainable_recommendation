@@ -8,7 +8,7 @@ import csv
 import dill as pickle
 import os
 
-dataset_name = "toys"
+dataset_name = "movies"
 tf.flags.DEFINE_string("valid_data", "../data2014/%s/%s_valid.csv" % (dataset_name, dataset_name), " Data for validation")
 tf.flags.DEFINE_string("test_data", "../data2014/%s/%s_test.csv" % (dataset_name, dataset_name), "Data for testing")
 tf.flags.DEFINE_string("train_data", "../data2014/%s/%s_train.csv" % (dataset_name, dataset_name), "Data for training")
