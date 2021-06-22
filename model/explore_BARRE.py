@@ -1,3 +1,6 @@
+'''
+这一版只是随机选了一些案例把词云给打出来看了一下，用tfidf作为词频，也弃用
+'''
 import tensorflow.compat.v1 as tf
 import numpy as np
 import dill as pickle
@@ -91,15 +94,7 @@ def make_tfidf_wordcloud(top_reviews, corpus, test_id, reviewerID, asin, type, s
     w = wordcloud.WordCloud(width=800, height=400, background_color='white', stopwords=stop_words)
     w.generate_from_frequencies(word_fre)
     w.to_file("../example/%s_%s_%s_%s_%s_%s.png" % (dataset_name, test_id, type, reviewerID, asin, time_str))
-
-
-# if __name__ == '__main__':
-# FLAGS = tf.flags.FLAGS
-# FLAGS.flag_values_dict()
-# print("\nParameters:")
-# for attr, value in sorted(FLAGS.__flags.items()):
-#     print("{}={}".format(attr.upper(), value))
-# print("")
+    
 
 print("Loading trained model...")
 para = pickle.load(open(para_data, 'rb'))
