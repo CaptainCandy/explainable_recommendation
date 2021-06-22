@@ -1,3 +1,7 @@
+'''
+这一版没有输出原始文本，弃用
+'''
+
 import tensorflow.compat.v1 as tf
 import numpy as np
 import pickle
@@ -73,7 +77,7 @@ if __name__ == '__main__':
     test_data = np.array(test_data)
     pkl_file.close()
 
-    # 要查看的某个测试点
+    # 要查看的某个测试点，随便选
     test_id = 200
     test_data = test_data[test_id:test_id+1]
     userid_test, itemid_test, reuid, reiid, y_test = zip(*test_data)
@@ -106,6 +110,7 @@ if __name__ == '__main__':
 
         # saver = tf.train.import_meta_graph('./checkpoints/NARRE_instruments_2021-02-08_22h47m03s.ckpt-50102.meta')
         saver = tf.train.Saver()
+        # 读取存在本地的最优模型
         saver.restore(sess, "./checkpoints/NARRE_music_2021-02-12_21h22m27s.ckpt-148810")
 
         u_batch = [u_text[userid_test[0][0]]]
@@ -128,8 +133,10 @@ if __name__ == '__main__':
 
         pred_ratings, item_attention, loss, rmse, mae = sess.run([deep.predictions, deep.i_a, deep.loss, deep.accuracy, deep.mae],
                                                  feed_dict)
+        # 打印推理的结果，给出预测评分
         print("pred:", pred_ratings[0][0], "y:", y_batch[0][0], "\n", loss, rmse, mae)
 
+        # 获取物品评论的注意力值并排序
         item_attention = np.array(item_attention).flatten()
         print(item_attention)
         sortidx = np.argsort(item_attention)[::-1]
@@ -149,4 +156,5 @@ if __name__ == '__main__':
             item_reviews.append(review)
         item_reviews = np.array(item_reviews)[sortidx]
 
+        # 打印出来查看
         print(item_reviews[:6])
