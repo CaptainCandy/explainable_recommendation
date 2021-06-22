@@ -1,5 +1,6 @@
 '''
 Data pre process
+这个文件主要是做一下数据集的数据准备，主要是数字编码，切分训练集测试集，保存数字编码和原始ID之间的转换关系
 
 @author:
 Xinze Tang
